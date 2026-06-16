@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  
+  --color-white: var(--white-bg);
+  --color-gray-50: var(--gray-50-bg);
+  --color-gray-100: var(--gray-100-bg);
+  --color-gray-150: var(--gray-150-bg);
+  --color-gray-200: var(--gray-200-bg);
+  --color-gray-300: var(--gray-300-bg);
+  --color-gray-400: var(--gray-400-bg);
+  --color-gray-500: var(--gray-500-bg);
+  --color-gray-600: var(--gray-600-bg);
+  --color-gray-700: var(--gray-700-bg);
+  --color-gray-800: var(--gray-800-bg);
+  --color-gray-900: var(--gray-900-bg);
+  --color-gray-950: var(--gray-950-bg);
+}
+
+:root {
+  --background: #f9fbf9;
+  --foreground: #111827;
+  
+  --primary: #1a5c2a;
+  --primary-dark: #0d2b14;
+  --accent: #2e8b3e;
+  --surface: #f0f7f1;
+  --surface-hover: #e2efe4;
+  
+  --white-bg: #ffffff;
+  --gray-50-bg: #f9fafb;
+  --gray-100-bg: #f3f4f6;
+  --gray-150-bg: #eceef2;
+  --gray-200-bg: #e5e7eb;
+  --gray-300-bg: #d1d5db;
+  --gray-400-bg: #9ca3af;
+  --gray-500-bg: #6b7280;
+  --gray-600-bg: #4b5563;
+  --gray-700-bg: #374151;
+  --gray-800-bg: #1f2937;
+  --gray-900-bg: #111827;
+  --gray-950-bg: #030712;
+}
+
+.dark {
+  --background: #090e0a;
+  --foreground: #f3f7f4;
+  
+  --primary: #2e8b3e;
+  --primary-dark: #48c35b;
+  --accent: #48c35b;
+  --surface: #142217;
+  --surface-hover: #1b2f1f;
+  
+  --white-bg: #111812;
+  --gray-50-bg: #151e16;
+  --gray-100-bg: #1a251b;
+  --gray-150-bg: #1f2f21;
+  --gray-200-bg: #263829;
+  --gray-300-bg: #384e3c;
+  --gray-400-bg: #6b826f;
+  --gray-500-bg: #9caa9e;
+  --gray-600-bg: #b9c5bb;
+  --gray-700-bg: #d0dad2;
+  --gray-800-bg: #e2eae4;
+  --gray-900-bg: #f3f7f4;
+  --gray-950-bg: #fbfdfc;
+
+  /* Directly override Tailwind theme tokens — unlayered beats @layer theme */
+  --color-primary: #2e8b3e;
+  --color-primary-dark: #48c35b;
+  --color-accent: #48c35b;
+  --color-surface: #142217;
+  --color-surface-hover: #1b2f1f;
+
+  --color-white: #111812;
+  --color-gray-50: #151e16;
+  --color-gray-100: #1a251b;
+  --color-gray-150: #1f2f21;
+  --color-gray-200: #263829;
+  --color-gray-300: #384e3c;
+  --color-gray-400: #6b826f;
+  --color-gray-500: #9caa9e;
+  --color-gray-600: #b9c5bb;
+  --color-gray-700: #d0dad2;
+  --color-gray-800: #e2eae4;
+  --color-gray-900: #f3f7f4;
+  --color-gray-950: #fbfdfc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+/* Base form controls styling for perfect light/dark mode contrast */
+input, select, textarea {
+  background-color: var(--white-bg);
+  color: var(--foreground);
+}
+
+option {
+  background-color: var(--white-bg);
+  color: var(--foreground);
+}
+
+.dark input, .dark select, .dark textarea, .dark option {
+  background-color: var(--gray-50-bg) !important;
+  color: var(--foreground) !important;
+}
+
