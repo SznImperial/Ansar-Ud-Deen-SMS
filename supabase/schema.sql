@@ -406,3 +406,42 @@ create or replace trigger on_profile_deleted
   after delete on public.profiles
   for each row execute procedure public.handle_deleted_user();
 
+-- 14. STUDENT_SUBJECTS Table (Elective Subject Registrations)
+create table public.student_subjects (
+    id uuid default gen_random_uuid() primary key,
+    student_id uuid references public.students(id) on delete cascade not null,
+    class_subject_id uuid references public.class_subjects(id) on delete cascade not null,
+    created_at timestamptz default timezone('utc'::text, now()) not null,
+    unique (student_id, class_subject_id)
+);
+
+-- Enable RLS
+alter table public.student_subjects enable row level security;
+
+-- Admins full access
+create policy "Admins can do everything on student_subjects"
+on public.student_subjects for all using (public.is_admin());
+
+-- Teachers read access
+create policy "Teachers can read student_subjects"
+on public.student_subjects for select using (
+  exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'teacher'
+  )
+);
+
+-- Students and parents read access
+create policy "Students and parents can read their own student_subjects"
+on public.student_subjects for select using (
+  exists (
+    select 1 from public.students s
+    where s.id = student_id 
+    and (
+      s.profile_id = auth.uid() 
+      or lower(s.parent_email) = (select lower(email) from public.profiles where id = auth.uid())
+    )
+  )
+);
+
+

@@ -124,3 +124,11 @@ export interface Submission {
   status: 'submitted' | 'graded';
 }
 
+export interface StudentSubject {
+  id: string;
+  student_id: string;
+  class_subject_id: string;
+  created_at?: string;
+}
+
+

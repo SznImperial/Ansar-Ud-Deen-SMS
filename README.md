@@ -11,6 +11,7 @@ Ansar-Ud-Deen School Management System is a modern, responsive, and feature-rich
 #### 🏛️ Administrator Portal (`/admin`)
 * **Records & Staff Registry**: Manage profile registration cards, contact information, and assigned staff credentials for teachers and students.
 * **Curriculum Configuration**: Add, edit, or delete classes, subjects, and teacher-to-subject allocations with cascade safety.
+* **Elective Subject Registrations**: Map individual student subject enrollments in Senior Secondary classes with automatic compulsory fallback.
 * **Timetable Builder**: Construct weekly schedules for classes with collision warnings.
 * **Fee Records Manager**: Track fee payments, outstanding balances, and update receipts.
 * **Broadcast Notice Board**: Send school-wide announcements or class-specific notifications.
@@ -121,6 +122,15 @@ create table public.submissions (
   submitted_at timestamp with time zone default timezone('utc'::text, now()) not null,
   graded_at timestamp with time zone,
   unique(assignment_id, student_id)
+);
+
+-- Student Subjects (Elective Registrations)
+create table public.student_subjects (
+  id uuid default gen_random_uuid() primary key,
+  student_id uuid references public.students(id) on delete cascade not null,
+  class_subject_id uuid references public.class_subjects(id) on delete cascade not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique (student_id, class_subject_id)
 );
 ```
 

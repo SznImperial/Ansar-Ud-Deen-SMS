@@ -69,9 +69,8 @@ export default function MarkAttendancePage() {
         const selectedCS = cs.find(x => x.id === selectedCsId);
         if (!selectedCS) return;
 
-        // Fetch students in this class
-        const stdList = await dbService.getStudents();
-        const classStudents = stdList.filter(s => s.class_id === selectedCS.class_id);
+        // Fetch students enrolled for this class subject
+        const classStudents = await dbService.getStudentsForClassSubject(selectedCsId);
         setStudents(classStudents);
 
         // Fetch existing attendance logs

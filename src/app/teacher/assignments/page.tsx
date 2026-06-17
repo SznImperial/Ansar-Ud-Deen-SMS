@@ -98,8 +98,20 @@ export default function TeacherAssignmentsPage() {
     }
   };
 
+  const [activeClassStudents, setActiveClassStudents] = useState<T.Student[]>([]);
+
   useEffect(() => {
     loadAssignments();
+    async function loadClassStudents() {
+      if (!selectedCsId) return;
+      try {
+        const enrolled = await dbService.getStudentsForClassSubject(selectedCsId);
+        setActiveClassStudents(enrolled);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadClassStudents();
   }, [selectedCsId]);
 
   const handleCreateAssignment = async (e: React.FormEvent) => {
@@ -177,11 +189,6 @@ export default function TeacherAssignmentsPage() {
       setGrading(false);
     }
   };
-
-  const activeAllocation = allocations.find(a => a.id === selectedCsId);
-  const activeClassStudents = activeAllocation 
-    ? students.filter(s => s.class_id === activeAllocation.classId) 
-    : [];
 
   if (loading) {
     return (

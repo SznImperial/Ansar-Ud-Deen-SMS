@@ -192,6 +192,7 @@ class MockDB {
   getNotifications = () => this.get('notifications', MOCK_NOTIFICATIONS);
   getAssignments = () => this.get('assignments', MOCK_ASSIGNMENTS);
   getSubmissions = () => this.get('submissions', MOCK_SUBMISSIONS);
+  getStudentSubjects = () => this.get('student_subjects', [] as T.StudentSubject[]);
 
   // Setters
   saveProfiles = (d: T.Profile[]) => this.save('profiles', d);
@@ -207,6 +208,7 @@ class MockDB {
   saveNotifications = (d: T.SchoolNotification[]) => this.save('notifications', d);
   saveAssignments = (d: T.Assignment[]) => this.save('assignments', d);
   saveSubmissions = (d: T.Submission[]) => this.save('submissions', d);
+  saveStudentSubjects = (d: T.StudentSubject[]) => this.save('student_subjects', d);
 }
 
 export const mockDB = new MockDB();
@@ -730,6 +732,89 @@ export const dbService = {
     return notif;
   },
 
+  // --- STUDENT ELECTIVE SUBJECTS ---
+  async getStudentSubjects(filters?: { studentId?: string }): Promise<T.StudentSubject[]> {
+    if (isSupabaseConfigured) {
+      let query = supabase!.from('student_subjects').select('*');
+      if (filters?.studentId) {
+        query = query.eq('student_id', filters.studentId);
+      }
+      const { data } = await query;
+      return data || [];
+    } else {
+      let list = mockDB.getStudentSubjects();
+      if (filters?.studentId) {
+        list = list.filter(ss => ss.student_id === filters.studentId);
+      }
+      return list;
+    }
+  },
+
+  async setStudentSubjects(studentId: string, classSubjectIds: string[]): Promise<void> {
+    if (isSupabaseConfigured) {
+      // 1. Delete existing student subjects
+      const { error: deleteError } = await supabase!
+        .from('student_subjects')
+        .delete()
+        .eq('student_id', studentId);
+      if (deleteError) throw deleteError;
+
+      // 2. Insert new selections
+      if (classSubjectIds.length > 0) {
+        const payload = classSubjectIds.map(csId => ({
+          student_id: studentId,
+          class_subject_id: csId
+        }));
+        const { error: insertError } = await supabase!
+          .from('student_subjects')
+          .insert(payload);
+        if (insertError) throw insertError;
+      }
+    } else {
+      let list = mockDB.getStudentSubjects();
+      // Filter out existing for this student
+      list = list.filter(ss => ss.student_id !== studentId);
+      // Add new selections
+      classSubjectIds.forEach(csId => {
+        list.push({
+          id: `ss-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          student_id: studentId,
+          class_subject_id: csId
+        });
+      });
+      mockDB.saveStudentSubjects(list);
+    }
+  },
+
+  async getStudentsForClassSubject(classSubjectId: string): Promise<T.Student[]> {
+    // 1. Get class_subject details to find the class ID
+    const classSubjects = await this.getClassSubjects();
+    const cs = classSubjects.find(x => x.id === classSubjectId);
+    if (!cs) return [];
+
+    // 2. Get all students in this class
+    const allStudents = await this.getStudents();
+    const classStudents = allStudents.filter(s => s.class_id === cs.class_id);
+
+    // 3. Get student subjects allocations
+    const studentSubs = await this.getStudentSubjects();
+
+    // 4. Filter class students
+    return classStudents.filter(student => {
+      // Find registrations for this student
+      const studentRegs = studentSubs.filter(ss => ss.student_id === student.id);
+      
+      // If student has registered for at least one subject explicitly:
+      if (studentRegs.length > 0) {
+        // They must have registered for this specific classSubjectId
+        return studentRegs.some(ss => ss.class_subject_id === classSubjectId);
+      }
+      
+      // Otherwise, compulsory fallback: they offer all class subjects
+      return true;
+    });
+  },
+
   // --- ASSIGNMENTS & SUBMISSIONS ---
   async getAssignments(filters?: { classSubjectId?: string; classId?: string; studentId?: string }): Promise<T.Assignment[]> {
     if (isSupabaseConfigured) {
@@ -753,11 +838,25 @@ export const dbService = {
           .eq('id', filters.studentId)
           .single();
         if (!student) return [];
-        const { data: classSubjects } = await supabase!
-          .from('class_subjects')
-          .select('id')
-          .eq('class_id', student.class_id);
-        const csIds = (classSubjects || []).map(cs => cs.id);
+
+        // Fetch student's specific subject registrations
+        const { data: registeredSubs } = await supabase!
+          .from('student_subjects')
+          .select('class_subject_id')
+          .eq('student_id', filters.studentId);
+        
+        let csIds: string[] = [];
+        if (registeredSubs && registeredSubs.length > 0) {
+          csIds = registeredSubs.map(rs => rs.class_subject_id);
+        } else {
+          // Fallback to all class subjects
+          const { data: classSubjects } = await supabase!
+            .from('class_subjects')
+            .select('id')
+            .eq('class_id', student.class_id);
+          csIds = (classSubjects || []).map(cs => cs.id);
+        }
+
         if (csIds.length === 0) return [];
         query = query.in('class_subject_id', csIds);
       }
@@ -776,8 +875,15 @@ export const dbService = {
     if (filters?.studentId) {
       const student = mockDB.getStudents().find(s => s.id === filters.studentId);
       if (!student) return [];
-      const classSubjects = mockDB.getClassSubjects().filter(cs => cs.class_id === student.class_id).map(cs => cs.id);
-      list = list.filter(a => classSubjects.includes(a.class_subject_id));
+      
+      const registeredSubs = mockDB.getStudentSubjects().filter(ss => ss.student_id === filters.studentId);
+      let csIds: string[] = [];
+      if (registeredSubs.length > 0) {
+        csIds = registeredSubs.map(ss => ss.class_subject_id);
+      } else {
+        csIds = mockDB.getClassSubjects().filter(cs => cs.class_id === student.class_id).map(cs => cs.id);
+      }
+      list = list.filter(a => csIds.includes(a.class_subject_id));
     }
     return list.sort((a, b) => b.created_at.localeCompare(a.created_at));
   },

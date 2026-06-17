@@ -12,6 +12,7 @@ export default function UsersManagementPage() {
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
   const [profiles, setProfiles] = useState<T.Profile[]>([]);
   const [classes, setClasses] = useState<T.Class[]>([]);
+  const [subjects, setSubjects] = useState<T.Subject[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Search queries
@@ -48,6 +49,14 @@ export default function UsersManagementPage() {
   // Edit states
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
 
+  // Student subjects management states
+  const [showSubjectsModal, setShowSubjectsModal] = useState(false);
+  const [subjectsStudent, setSubjectsStudent] = useState<T.Student | null>(null);
+  const [studentSubjectsAllocations, setStudentSubjectsAllocations] = useState<T.ClassSubject[]>([]);
+  const [selectedStudentSubjectIds, setSelectedStudentSubjectIds] = useState<string[]>([]);
+  const [savingSubjects, setSavingSubjects] = useState(false);
+  const [subjectsModalError, setSubjectsModalError] = useState('');
+
   // Delete Confirmation Modal State
   const [deleteConfirm, setDeleteConfirm] = useState<{
     show: boolean;
@@ -64,16 +73,18 @@ export default function UsersManagementPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [stdList, tchrList, profList, clsList] = await Promise.all([
+      const [stdList, tchrList, profList, clsList, subList] = await Promise.all([
         dbService.getStudents(),
         dbService.getTeachers(),
         dbService.getProfiles(),
-        dbService.getClasses()
+        dbService.getClasses(),
+        dbService.getSubjects()
       ]);
       setStudents(stdList);
       setTeachers(tchrList);
       setProfiles(profList);
       setClasses(clsList);
+      setSubjects(subList);
       
       if (clsList.length > 0 && !sClassId) {
         setSClassId(clsList[0].id);
@@ -237,6 +248,48 @@ export default function UsersManagementPage() {
     });
   };
 
+  const handleManageSubjects = async (student: T.Student) => {
+    setSubjectsStudent(student);
+    setSubjectsModalError('');
+    setSavingSubjects(false);
+    
+    try {
+      // Get class subjects allocations for this student's class
+      const csList = await dbService.getClassSubjects();
+      const classCs = csList.filter(cs => cs.class_id === student.class_id);
+      setStudentSubjectsAllocations(classCs);
+
+      // Get student's current registrations
+      const registered = await dbService.getStudentSubjects({ studentId: student.id });
+      const activeCsIds = registered.map(r => r.class_subject_id);
+      setSelectedStudentSubjectIds(activeCsIds);
+      
+      setShowSubjectsModal(true);
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to load student subjects data: ' + err.message);
+    }
+  };
+
+  const handleSaveStudentSubjects = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subjectsStudent) return;
+
+    setSavingSubjects(true);
+    setSubjectsModalError('');
+    try {
+      await dbService.setStudentSubjects(subjectsStudent.id, selectedStudentSubjectIds);
+      setShowSubjectsModal(false);
+      setSubjectsStudent(null);
+      loadData();
+    } catch (err: any) {
+      console.error(err);
+      setSubjectsModalError(err.message || 'Failed to save subject registrations.');
+    } finally {
+      setSavingSubjects(false);
+    }
+  };
+
   // Filter students
   const filteredStudents = students.filter(s => {
     const term = studentSearch.toLowerCase();
@@ -378,6 +431,12 @@ export default function UsersManagementPage() {
                             </div>
                           </td>
                           <td className="p-4 text-right space-x-2">
+                            <button
+                              onClick={() => handleManageSubjects(student)}
+                              className="px-2.5 py-1.5 text-xs text-blue-600 hover:bg-blue-50 border border-blue-200 rounded-lg font-bold cursor-pointer transition-colors"
+                            >
+                              Subjects
+                            </button>
                             <button
                               onClick={() => handleEditStudent(student)}
                               className="px-2.5 py-1.5 text-xs text-primary hover:bg-emerald-50 border border-gray-200 rounded-lg font-bold cursor-pointer transition-colors"
@@ -769,6 +828,99 @@ export default function UsersManagementPage() {
                 Confirm Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Subjects Modal */}
+      {showSubjectsModal && subjectsStudent && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full overflow-hidden border shadow-lg animate-in fade-in zoom-in-95 duration-150 text-xs">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+              <div>
+                <h2 className="text-base font-extrabold text-gray-900">Manage Registered Subjects</h2>
+                <p className="text-[11px] text-gray-500 mt-0.5">Student: <span className="font-bold text-gray-800">{subjectsStudent.full_name}</span></p>
+              </div>
+              <button 
+                onClick={() => { setShowSubjectsModal(false); setSubjectsStudent(null); }} 
+                className="text-gray-400 hover:text-gray-600 font-bold text-sm"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSaveStudentSubjects} className="p-6 space-y-4">
+              {subjectsModalError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-start gap-2 text-[11px]">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span className="font-semibold leading-relaxed">{subjectsModalError}</span>
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-blue-800 text-[11px] font-semibold leading-relaxed">
+                💡 Compulsory Fallback Policy: If no subjects are checked, the student automatically offers ALL subjects mapped to their class. Check checkboxes only if this student offers a custom elective selection.
+              </div>
+
+              <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-1">
+                <label className="block text-xs font-bold text-gray-700 mb-2">Registered Subjects Grid</label>
+                {studentSubjectsAllocations.length === 0 ? (
+                  <div className="p-4 text-center text-gray-400 border border-dashed rounded-lg bg-gray-50 font-medium">
+                    No subjects are currently assigned to this student&apos;s class. Assign subjects to their class under Portal Settings first.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2">
+                    {studentSubjectsAllocations.map(cs => {
+                      const isChecked = selectedStudentSubjectIds.includes(cs.id);
+                      const sub = subjects.find(s => s.id === cs.subject_id);
+                      const teacherProf = cs.teacher_id ? profiles.find(p => p.id === cs.teacher_id) : null;
+                      return (
+                        <label 
+                          key={cs.id} 
+                          className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors font-semibold text-xs ${
+                            isChecked 
+                              ? 'bg-emerald-50/50 border-emerald-300 text-emerald-955' 
+                              : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <input 
+                            type="checkbox"
+                            className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                            checked={isChecked}
+                            onChange={e => {
+                              if (e.target.checked) {
+                                setSelectedStudentSubjectIds(prev => [...prev, cs.id]);
+                              } else {
+                                setSelectedStudentSubjectIds(prev => prev.filter(id => id !== cs.id));
+                              }
+                            }}
+                          />
+                          <div className="flex-1">
+                            <div className="font-bold">{sub ? sub.name : 'Unknown Subject'}</div>
+                            <div className="text-[10px] text-gray-400 font-medium">Teacher: {teacherProf ? teacherProf.full_name : 'Unassigned'}</div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-gray-150 flex justify-end gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => { setShowSubjectsModal(false); setSubjectsStudent(null); }} 
+                  className="px-4 py-2 border rounded-lg text-xs font-bold text-gray-700 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={savingSubjects}
+                  className="px-4 py-2 bg-primary hover:bg-primary-dark disabled:bg-primary/50 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                >
+                  {savingSubjects ? 'Saving...' : 'Save Subjects'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
