@@ -392,3 +392,17 @@ create policy "Parents can view their children's submissions" on public.submissi
       where s.id = student_id and s.parent_email = (select email from public.profiles where id = auth.uid())
     )
   );
+
+-- Trigger to delete auth.users when a public.profiles row is deleted
+create or replace function public.handle_deleted_user()
+returns trigger as $$
+begin
+  delete from auth.users where id = old.id;
+  return old;
+end;
+$$ language plpgsql security definer;
+
+create or replace trigger on_profile_deleted
+  after delete on public.profiles
+  for each row execute procedure public.handle_deleted_user();
+

@@ -21,6 +21,8 @@ export default function UsersManagementPage() {
   // Modals / Form States
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
+  const [studentError, setStudentError] = useState('');
+  const [teacherError, setTeacherError] = useState('');
 
   // Form Fields - Student
   const [sName, setSName] = useState('');
@@ -140,8 +142,13 @@ export default function UsersManagementPage() {
       setEditingStudentId(null);
       setShowStudentModal(false);
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      if (err.message?.toLowerCase().includes('already registered') || err.message?.includes('422')) {
+        setStudentError('This email is already registered in the system (Supabase Auth). If this student/parent account was previously deleted, please delete the user from your Supabase Auth Console, or use a different email address.');
+      } else {
+        setStudentError(err.message || 'An error occurred while saving the student record.');
+      }
     }
   };
 
@@ -173,12 +180,18 @@ export default function UsersManagementPage() {
       setTQualification('');
       setShowTeacherModal(false);
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      if (err.message?.toLowerCase().includes('already registered') || err.message?.includes('422')) {
+        setTeacherError('This email is already registered in the system (Supabase Auth). If this staff was previously deleted, they must be manually removed from your Supabase Auth Console first, or you can register them with a different email address.');
+      } else {
+        setTeacherError(err.message || 'An error occurred while registering the staff member.');
+      }
     }
   };
 
   const handleEditStudent = (student: T.Student) => {
+    setStudentError('');
     setEditingStudentId(student.id);
     setSName(student.full_name);
     setSAdmissionNo(student.admission_no);
@@ -257,7 +270,15 @@ export default function UsersManagementPage() {
             <p className="text-sm text-gray-500 mt-1">Manage registration cards, parent information, and assigned staff qualifications.</p>
           </div>
           <button 
-            onClick={() => activeTab === 'students' ? setShowStudentModal(true) : setShowTeacherModal(true)}
+            onClick={() => {
+              if (activeTab === 'students') {
+                setStudentError('');
+                setShowStudentModal(true);
+              } else {
+                setTeacherError('');
+                setShowTeacherModal(true);
+              }
+            }}
             className="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
           >
             <Plus className="h-4 w-4" />
@@ -464,6 +485,12 @@ export default function UsersManagementPage() {
                 </button>
               </div>
               <form onSubmit={handleCreateStudent} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                {studentError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-start gap-2 text-xs">
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span className="font-semibold leading-relaxed">{studentError}</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700">Full Name</label>
@@ -616,6 +643,12 @@ export default function UsersManagementPage() {
                 <button onClick={() => setShowTeacherModal(false)} className="text-gray-400 hover:text-gray-600 font-bold">✕</button>
               </div>
               <form onSubmit={handleCreateTeacher} className="p-6 space-y-4">
+                {teacherError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-start gap-2 text-xs">
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span className="font-semibold leading-relaxed">{teacherError}</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700">Staff Full Name</label>
