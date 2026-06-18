@@ -486,6 +486,25 @@ export const dbService = {
     throw new Error('Student not found');
   },
 
+  async promoteStudents(studentIds: string[], targetClassId: string | null): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase!
+        .from('students')
+        .update({ class_id: targetClassId })
+        .in('id', studentIds);
+      if (error) throw error;
+      return;
+    }
+    const students = mockDB.getStudents();
+    studentIds.forEach(id => {
+      const idx = students.findIndex(s => s.id === id);
+      if (idx !== -1) {
+        students[idx].class_id = targetClassId;
+      }
+    });
+    mockDB.saveStudents(students);
+  },
+
   // --- SUBJECTS ---
   async getSubjects(): Promise<T.Subject[]> {
     if (isSupabaseConfigured) {
@@ -698,6 +717,56 @@ export const dbService = {
       mockDB.saveFees(fees);
       return updatedRecord;
     }
+  },
+
+  async allocateClassFees(classId: string, term: string, academicYear: string, amount: number): Promise<number> {
+    // 1. Get all students in the class
+    const allStudents = await this.getStudents();
+    const classStudents = allStudents.filter(s => s.class_id === classId);
+    if (classStudents.length === 0) return 0;
+
+    // 2. Get existing fee records for this term and year
+    const allFees = await this.getFees();
+    const existingStudentIds = new Set(
+      allFees
+        .filter(f => f.term === term && f.academic_year === academicYear)
+        .map(f => f.student_id)
+    );
+
+    // 3. Filter out students who already have a record
+    const studentsToBill = classStudents.filter(s => !existingStudentIds.has(s.id));
+    if (studentsToBill.length === 0) return 0;
+
+    // 4. Create new fee records
+    if (isSupabaseConfigured) {
+      const newRecords = studentsToBill.map(s => ({
+        student_id: s.id,
+        term,
+        academic_year: academicYear,
+        amount_owed: amount,
+        amount_paid: 0,
+        status: 'unpaid'
+      }));
+      const { error } = await supabase!.from('fee_records').insert(newRecords);
+      if (error) throw error;
+    } else {
+      const fees = mockDB.getFees();
+      studentsToBill.forEach(s => {
+        fees.push({
+          id: `f-${s.id}-${Date.now()}`,
+          student_id: s.id,
+          term: term as any,
+          academic_year: academicYear,
+          amount_owed: amount,
+          amount_paid: 0,
+          status: 'unpaid',
+          updated_at: new Date().toISOString()
+        });
+      });
+      mockDB.saveFees(fees);
+    }
+
+    return studentsToBill.length;
   },
 
   // --- NOTIFICATIONS ---

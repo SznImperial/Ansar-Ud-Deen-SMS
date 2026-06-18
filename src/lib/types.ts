@@ -29,7 +29,7 @@ export interface Class {
 export interface Student {
   id: string;
   profile_id?: string; // Links to Student profile
-  class_id: string;
+  class_id?: string | null;
   admission_no: string;
   full_name: string;
   parent_name: string;

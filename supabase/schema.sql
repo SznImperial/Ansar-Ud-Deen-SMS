@@ -34,7 +34,7 @@ create table public.classes (
 create table public.students (
     id uuid default gen_random_uuid() primary key,
     profile_id uuid references public.profiles(id) on delete set null, -- Optional parent/student profile link
-    class_id uuid references public.classes(id) on delete cascade not null,
+    class_id uuid references public.classes(id) on delete cascade,
     admission_no text not null unique,
     full_name text not null,
     parent_name text not null,

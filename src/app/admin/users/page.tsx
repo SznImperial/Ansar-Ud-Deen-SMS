@@ -7,7 +7,7 @@ import * as T from '@/lib/types';
 import { Plus, Search, UserCheck, GraduationCap, Users, UserPlus, Mail, Phone, Calendar, AlertTriangle } from 'lucide-react';
 
 export default function UsersManagementPage() {
-  const [activeTab, setActiveTab] = useState<'students' | 'teachers'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'promotions'>('students');
   const [students, setStudents] = useState<T.Student[]>([]);
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
   const [profiles, setProfiles] = useState<T.Profile[]>([]);
@@ -57,6 +57,13 @@ export default function UsersManagementPage() {
   const [savingSubjects, setSavingSubjects] = useState(false);
   const [subjectsModalError, setSubjectsModalError] = useState('');
 
+  // Student promotions states
+  const [promoSourceClassId, setPromoSourceClassId] = useState('');
+  const [promoTargetClassId, setPromoTargetClassId] = useState('');
+  const [selectedPromoStudentIds, setSelectedPromoStudentIds] = useState<string[]>([]);
+  const [promoting, setPromoting] = useState(false);
+  const [promoSuccessMessage, setPromoSuccessMessage] = useState('');
+
   // Delete Confirmation Modal State
   const [deleteConfirm, setDeleteConfirm] = useState<{
     show: boolean;
@@ -85,9 +92,9 @@ export default function UsersManagementPage() {
       setProfiles(profList);
       setClasses(clsList);
       setSubjects(subList);
-      
-      if (clsList.length > 0 && !sClassId) {
-        setSClassId(clsList[0].id);
+      if (clsList.length > 0) {
+        if (!sClassId) setSClassId(clsList[0].id);
+        if (!promoSourceClassId) setPromoSourceClassId(clsList[0].id);
       }
     } catch (err) {
       console.error(err);
@@ -99,6 +106,24 @@ export default function UsersManagementPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Update student checkboxes and target class when source class changes
+  useEffect(() => {
+    if (promoSourceClassId) {
+      const classStudents = students.filter(s => s.class_id === promoSourceClassId);
+      setSelectedPromoStudentIds(classStudents.map(s => s.id));
+
+      const currentIndex = classes.findIndex(c => c.id === promoSourceClassId);
+      if (currentIndex !== -1 && currentIndex + 1 < classes.length) {
+        setPromoTargetClassId(classes[currentIndex + 1].id);
+      } else {
+        setPromoTargetClassId('graduate');
+      }
+    } else {
+      setSelectedPromoStudentIds([]);
+    }
+    setPromoSuccessMessage('');
+  }, [promoSourceClassId, students, classes]);
 
   const handleCreateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,7 +231,7 @@ export default function UsersManagementPage() {
     setEditingStudentId(student.id);
     setSName(student.full_name);
     setSAdmissionNo(student.admission_no);
-    setSClassId(student.class_id);
+    setSClassId(student.class_id || '');
     setSParentName(student.parent_name);
     setSParentPhone(student.parent_phone || '');
     setSParentEmail(student.parent_email || '');
@@ -290,6 +315,27 @@ export default function UsersManagementPage() {
     }
   };
 
+  const handlePromoteStudents = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promoSourceClassId || !promoTargetClassId || selectedPromoStudentIds.length === 0) return;
+
+    setPromoting(true);
+    setPromoSuccessMessage('');
+    try {
+      const targetId = promoTargetClassId === 'graduate' ? null : promoTargetClassId;
+      await dbService.promoteStudents(selectedPromoStudentIds, targetId);
+      
+      const targetLabel = promoTargetClassId === 'graduate' ? 'Graduated / Alumni' : classes.find(c => c.id === promoTargetClassId)?.name || 'New Class';
+      setPromoSuccessMessage(`Successfully promoted ${selectedPromoStudentIds.length} students to ${targetLabel}!`);
+      loadData();
+    } catch (err: any) {
+      console.error(err);
+      alert('Failed to promote students: ' + err.message);
+    } finally {
+      setPromoting(false);
+    }
+  };
+
   // Filter students
   const filteredStudents = students.filter(s => {
     const term = studentSearch.toLowerCase();
@@ -322,21 +368,23 @@ export default function UsersManagementPage() {
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Records & Staff Registry</h1>
             <p className="text-sm text-gray-500 mt-1">Manage registration cards, parent information, and assigned staff qualifications.</p>
           </div>
-          <button 
-            onClick={() => {
-              if (activeTab === 'students') {
-                setStudentError('');
-                setShowStudentModal(true);
-              } else {
-                setTeacherError('');
-                setShowTeacherModal(true);
-              }
-            }}
-            className="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            <span>{activeTab === 'students' ? 'Add Student' : 'Add Staff'}</span>
-          </button>
+          {activeTab !== 'promotions' && (
+            <button 
+              onClick={() => {
+                if (activeTab === 'students') {
+                  setStudentError('');
+                  setShowStudentModal(true);
+                } else {
+                  setTeacherError('');
+                  setShowTeacherModal(true);
+                }
+              }}
+              className="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{activeTab === 'students' ? 'Add Student' : 'Add Staff'}</span>
+            </button>
+          )}
         </div>
 
         {/* Tab Buttons */}
@@ -362,6 +410,17 @@ export default function UsersManagementPage() {
           >
             <Users className="h-4 w-4" />
             <span>Teachers ({teachers.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('promotions')}
+            className={`px-6 py-3 border-b-2 font-bold text-sm transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'promotions' 
+                ? 'border-primary text-primary' 
+                : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            <UserCheck className="h-4 w-4" />
+            <span>Auto-Promotions</span>
           </button>
         </div>
 
@@ -525,6 +584,133 @@ export default function UsersManagementPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Promotions Tab */}
+        {activeTab === 'promotions' && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-xs p-6 space-y-6 text-xs font-semibold">
+            <div>
+              <h2 className="text-base font-extrabold text-gray-900">Session Transition & Auto-Promotion</h2>
+              <p className="text-xs text-gray-500 mt-1">Bulk promote students from a source class to a target class. Deselect students who are repeating the academic year.</p>
+            </div>
+
+            {promoSuccessMessage && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-850 rounded-lg font-bold flex items-center gap-2">
+                <span>✓ {promoSuccessMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handlePromoteStudents} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5">Source Class (Promote From)</label>
+                  <select
+                    required
+                    value={promoSourceClassId}
+                    onChange={e => setPromoSourceClassId(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg bg-white font-bold text-gray-950 focus:ring-primary focus:border-primary focus:outline-none"
+                  >
+                    {classes.map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.level.toUpperCase()})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5">Target Class (Promote To)</label>
+                  <select
+                    required
+                    value={promoTargetClassId}
+                    onChange={e => setPromoTargetClassId(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg bg-white font-bold text-gray-950 focus:ring-primary focus:border-primary focus:outline-none"
+                  >
+                    {classes
+                      .filter(c => c.id !== promoSourceClassId)
+                      .map(c => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.level.toUpperCase()})</option>
+                      ))}
+                    <option value="graduate">🎓 Graduate / Archive (Set Class to Unassigned)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Roster Checklist */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <div className="p-4 border-b border-gray-150 bg-gray-50/75 flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Students list in source class</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const classStudents = students.filter(s => s.class_id === promoSourceClassId);
+                        setSelectedPromoStudentIds(classStudents.map(s => s.id));
+                      }}
+                      className="text-[10px] text-primary hover:underline font-bold cursor-pointer"
+                    >
+                      Select All
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPromoStudentIds([])}
+                      className="text-[10px] text-gray-500 hover:underline font-bold cursor-pointer"
+                    >
+                      Deselect All
+                    </button>
+                  </div>
+                </div>
+
+                <div className="divide-y divide-gray-100 max-h-[40vh] overflow-y-auto">
+                  {students.filter(s => s.class_id === promoSourceClassId).length === 0 ? (
+                    <div className="p-8 text-center text-gray-500 font-medium bg-white">
+                      No students are currently enrolled in the selected source class.
+                    </div>
+                  ) : (
+                    students
+                      .filter(s => s.class_id === promoSourceClassId)
+                      .map(student => {
+                        const isChecked = selectedPromoStudentIds.includes(student.id);
+                        return (
+                          <label
+                            key={student.id}
+                            className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50/50 transition-colors font-semibold bg-white ${
+                              isChecked ? 'text-gray-900' : 'text-gray-400'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
+                              checked={isChecked}
+                              onChange={e => {
+                                if (e.target.checked) {
+                                  setSelectedPromoStudentIds(prev => [...prev, student.id]);
+                                } else {
+                                  setSelectedPromoStudentIds(prev => prev.filter(id => id !== student.id));
+                                }
+                              }}
+                            />
+                            <div className="flex justify-between items-center flex-1">
+                              <span className="font-bold">{student.full_name}</span>
+                              <span className="text-[10px] text-gray-400 font-mono font-medium">{student.admission_no}</span>
+                            </div>
+                          </label>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  disabled={promoting || selectedPromoStudentIds.length === 0}
+                  className="px-5 py-2.5 bg-primary hover:bg-primary-dark disabled:bg-primary/50 text-white rounded-lg text-sm font-bold shadow-sm transition-colors cursor-pointer flex items-center gap-2"
+                >
+                  {promoting ? 'Promoting...' : `Promote Selected (${selectedPromoStudentIds.length})`}
+                </button>
+              </div>
+            </form>
           </div>
         )}
 

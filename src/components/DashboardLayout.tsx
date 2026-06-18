@@ -55,11 +55,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           if (user.role === 'student') {
             const match = stdList.filter(s => s.profile_id === user.id);
             studentIds = match.map(s => s.id);
-            classIds = match.map(s => s.class_id);
+            classIds = match.map(s => s.class_id || '').filter(Boolean);
           } else {
             const match = stdList.filter(s => s.parent_email?.toLowerCase() === user.email.toLowerCase());
             studentIds = match.map(s => s.id);
-            classIds = match.map(s => s.class_id);
+            classIds = match.map(s => s.class_id || '').filter(Boolean);
           }
           
           audienceNotifs = notifs.filter(n => 
