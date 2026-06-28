@@ -33,6 +33,7 @@ export default function UsersManagementPage() {
   const [sParentPhone, setSParentPhone] = useState('');
   const [sParentEmail, setSParentEmail] = useState('');
   const [sProfileEmail, setSProfileEmail] = useState(''); // Optional student profile email
+  const [parentType, setParentType] = useState<'new' | 'existing'>('new');
 
   // Form Fields - Teacher
   const [tName, setTName] = useState('');
@@ -175,6 +176,7 @@ export default function UsersManagementPage() {
       setSProfileEmail('');
       setSPassword('');
       setSParentPassword('');
+      setParentType('new');
       setEditingStudentId(null);
       setShowStudentModal(false);
       loadData();
@@ -236,6 +238,11 @@ export default function UsersManagementPage() {
     setSParentPhone(student.parent_phone || '');
     setSParentEmail(student.parent_email || '');
     setSProfileEmail(profiles.find(p => p.id === student.profile_id)?.email || '');
+    
+    const parentEmail = student.parent_email || '';
+    const hasParent = parentEmail ? profiles.some(p => p.email.toLowerCase() === parentEmail.toLowerCase() && p.role === 'parent') : false;
+    setParentType(hasParent ? 'existing' : 'new');
+    
     setShowStudentModal(true);
   };
 
@@ -373,9 +380,26 @@ export default function UsersManagementPage() {
               onClick={() => {
                 if (activeTab === 'students') {
                   setStudentError('');
+                  setEditingStudentId(null);
+                  setSName('');
+                  setSAdmissionNo('');
+                  setSClassId(classes[0]?.id || '');
+                  setSParentName('');
+                  setSParentPhone('');
+                  setSParentEmail('');
+                  setSProfileEmail('');
+                  setSPassword('');
+                  setSParentPassword('');
+                  setParentType('new');
                   setShowStudentModal(true);
                 } else {
                   setTeacherError('');
+                  setTName('');
+                  setTEmail('');
+                  setTPhone('');
+                  setTPassword('');
+                  setTSpecialization('');
+                  setTQualification('');
                   setShowTeacherModal(true);
                 }
               }}
@@ -802,14 +826,81 @@ export default function UsersManagementPage() {
                 )}
 
                 <div className="border-t border-gray-100 pt-4">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-3">Parent Information</span>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-bold text-gray-505 uppercase tracking-wider">Parent Information</span>
+                    <div className="inline-flex rounded-md border border-gray-200 p-0.5 bg-gray-50 text-[10px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setParentType('new');
+                          setSParentEmail('');
+                          setSParentName('');
+                          setSParentPhone('');
+                        }}
+                        className={`px-2.5 py-1 rounded cursor-pointer transition-colors ${
+                          parentType === 'new' ? 'bg-primary text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+                        }`}
+                      >
+                        New Account
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setParentType('existing');
+                          setSParentEmail('');
+                          setSParentName('');
+                          setSParentPhone('');
+                        }}
+                        className={`px-2.5 py-1 rounded cursor-pointer transition-colors ${
+                          parentType === 'existing' ? 'bg-primary text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+                        }`}
+                      >
+                        Link Existing
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="space-y-4">
+                    {parentType === 'existing' && (
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700">Select Existing Parent Profile</label>
+                        <select
+                          className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs bg-white text-gray-950 font-bold"
+                          value={profiles.find(p => p.email.toLowerCase() === sParentEmail.toLowerCase() && p.role === 'parent')?.id || ''}
+                          onChange={e => {
+                            const pId = e.target.value;
+                            const parentProfile = profiles.find(p => p.id === pId);
+                            if (parentProfile) {
+                              setSParentEmail(parentProfile.email);
+                              setSParentName(parentProfile.full_name);
+                              const sibling = students.find(s => s.parent_email?.toLowerCase() === parentProfile.email.toLowerCase());
+                              setSParentPhone(sibling?.parent_phone || '');
+                            } else {
+                              setSParentEmail('');
+                              setSParentName('');
+                              setSParentPhone('');
+                            }
+                          }}
+                        >
+                          <option value="">-- Choose Parent --</option>
+                          {profiles
+                            .filter(p => p.role === 'parent')
+                            .map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.full_name} ({p.email})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-xs font-bold text-gray-700">Parent Full Name</label>
                       <input 
                         type="text" 
                         required 
-                        className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs" 
+                        disabled={parentType === 'existing'}
+                        className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200" 
                         value={sParentName} 
                         onChange={e => setSParentName(e.target.value)} 
                       />
@@ -819,7 +910,8 @@ export default function UsersManagementPage() {
                         <label className="block text-xs font-bold text-gray-700">Parent Phone</label>
                         <input 
                           type="text" 
-                          className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs" 
+                          disabled={parentType === 'existing'}
+                          className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200" 
                           value={sParentPhone} 
                           onChange={e => setSParentPhone(e.target.value)} 
                         />
@@ -828,14 +920,16 @@ export default function UsersManagementPage() {
                         <label className="block text-xs font-bold text-gray-700">Parent Email</label>
                         <input 
                           type="email" 
-                          className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs" 
+                          required
+                          disabled={parentType === 'existing'}
+                          className="mt-1 block w-full px-3 py-2 border rounded-lg text-xs disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200" 
                           value={sParentEmail} 
                           onChange={e => setSParentEmail(e.target.value)} 
                         />
                       </div>
                     </div>
 
-                    {sParentEmail && !editingStudentId && (
+                    {sParentEmail && !editingStudentId && parentType === 'new' && (
                       <div className="mt-2">
                         {profiles.some(p => p.email.toLowerCase() === sParentEmail.toLowerCase() && p.role === 'parent') ? (
                           <div className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-lg font-medium">

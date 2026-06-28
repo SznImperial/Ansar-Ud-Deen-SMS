@@ -32,7 +32,9 @@ export default function NoticeBoardPage() {
         
         setMyStudents(mine);
         if (mine.length > 0) {
-          setActiveStudent(mine[0]);
+          const savedId = typeof window !== 'undefined' ? localStorage.getItem('parent_active_student_id') : null;
+          const matched = mine.find(s => s.id === savedId);
+          setActiveStudent(matched || mine[0]);
         }
       } catch (err) {
         console.error(err);
@@ -145,7 +147,10 @@ export default function NoticeBoardPage() {
               value={activeStudent?.id}
               onChange={e => {
                 const match = myStudents.find(s => s.id === e.target.value);
-                if (match) setActiveStudent(match);
+                if (match) {
+                  setActiveStudent(match);
+                  localStorage.setItem('parent_active_student_id', match.id);
+                }
               }}
               className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none font-bold text-gray-950 shadow-sm"
             >
