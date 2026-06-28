@@ -209,6 +209,13 @@ class MockDB {
   saveAssignments = (d: T.Assignment[]) => this.save('assignments', d);
   saveSubmissions = (d: T.Submission[]) => this.save('submissions', d);
   saveStudentSubjects = (d: T.StudentSubject[]) => this.save('student_subjects', d);
+
+  getCbtExams = () => this.get('cbt_exams', [] as T.CBTExam[]);
+  saveCbtExams = (d: T.CBTExam[]) => this.save('cbt_exams', d);
+  getCbtQuestions = () => this.get('cbt_questions', [] as T.CBTQuestion[]);
+  saveCbtQuestions = (d: T.CBTQuestion[]) => this.save('cbt_questions', d);
+  getCbtSubmissions = () => this.get('cbt_submissions', [] as T.CBTSubmission[]);
+  saveCbtSubmissions = (d: T.CBTSubmission[]) => this.save('cbt_submissions', d);
 }
 
 export const mockDB = new MockDB();
@@ -1080,6 +1087,185 @@ export const dbService = {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+    }
+  },
+
+  async getCbtExams(): Promise<T.CBTExam[]> {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase!
+        .from('cbt_exams')
+        .select('*');
+      if (error) throw error;
+      return data || [];
+    }
+    return mockDB.getCbtExams();
+  },
+
+  async addCbtExam(exam: Omit<T.CBTExam, 'id' | 'created_at'>, questions: Omit<T.CBTQuestion, 'id' | 'exam_id'>[]): Promise<T.CBTExam> {
+    if (isSupabaseConfigured) {
+      const { data: examData, error: examError } = await supabase!
+        .from('cbt_exams')
+        .insert({
+          class_subject_id: exam.class_subject_id,
+          title: exam.title,
+          duration_minutes: exam.duration_minutes,
+          status: exam.status,
+          created_by: exam.created_by
+        })
+        .select()
+        .single();
+      if (examError) throw examError;
+
+      if (questions.length > 0) {
+        const questionsToInsert = questions.map(q => ({
+          exam_id: examData.id,
+          question_text: q.question_text,
+          option_a: q.option_a,
+          option_b: q.option_b,
+          option_c: q.option_c,
+          option_d: q.option_d,
+          correct_option: q.correct_option
+        }));
+        const { error: questionsError } = await supabase!
+          .from('cbt_questions')
+          .insert(questionsToInsert);
+        if (questionsError) throw questionsError;
+      }
+
+      return examData;
+    } else {
+      const examId = `exam-${Date.now()}`;
+      const newExam: T.CBTExam = {
+        ...exam,
+        id: examId,
+        created_at: new Date().toISOString()
+      };
+
+      const exams = mockDB.getCbtExams();
+      exams.push(newExam);
+      mockDB.saveCbtExams(exams);
+
+      if (questions.length > 0) {
+        const cbtQuestions = mockDB.getCbtQuestions();
+        questions.forEach((q, idx) => {
+          cbtQuestions.push({
+            ...q,
+            id: `q-${Date.now()}-${idx}`,
+            exam_id: examId
+          });
+        });
+        mockDB.saveCbtQuestions(cbtQuestions);
+      }
+
+      return newExam;
+    }
+  },
+
+  async updateCBTExamStatus(examId: string, status: T.CBTExam['status']): Promise<T.CBTExam> {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase!
+        .from('cbt_exams')
+        .update({ status })
+        .eq('id', examId)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } else {
+      const exams = mockDB.getCbtExams();
+      const idx = exams.findIndex(e => e.id === examId);
+      if (idx === -1) throw new Error('Exam not found');
+      exams[idx] = { ...exams[idx], status };
+      mockDB.saveCbtExams(exams);
+      return exams[idx];
+    }
+  },
+
+  async getCbtQuestions(examId?: string): Promise<T.CBTQuestion[]> {
+    if (isSupabaseConfigured) {
+      let query = supabase!.from('cbt_questions').select('*');
+      if (examId) {
+        query = query.eq('exam_id', examId);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    } else {
+      const questions = mockDB.getCbtQuestions();
+      if (examId) {
+        return questions.filter(q => q.exam_id === examId);
+      }
+      return questions;
+    }
+  },
+
+  async getCbtSubmissions(examId?: string): Promise<T.CBTSubmission[]> {
+    if (isSupabaseConfigured) {
+      let query = supabase!.from('cbt_submissions').select('*');
+      if (examId) {
+        query = query.eq('exam_id', examId);
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    } else {
+      const subs = mockDB.getCbtSubmissions();
+      if (examId) {
+        return subs.filter(s => s.exam_id === examId);
+      }
+      return subs;
+    }
+  },
+
+  async addCbtSubmission(sub: Omit<T.CBTSubmission, 'id' | 'submitted_at'>): Promise<T.CBTSubmission> {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase!
+        .from('cbt_submissions')
+        .insert({
+          exam_id: sub.exam_id,
+          student_id: sub.student_id,
+          answers: sub.answers,
+          score: sub.score,
+          total_questions: sub.total_questions,
+          tab_switch_count: sub.tab_switch_count,
+          noise_spike_count: sub.noise_spike_count,
+          proctor_violated: sub.proctor_violated,
+          status: sub.status
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } else {
+      const newSub: T.CBTSubmission = {
+        ...sub,
+        id: `sub-${Date.now()}`,
+        submitted_at: new Date().toISOString()
+      };
+      const subs = mockDB.getCbtSubmissions();
+      const filtered = subs.filter(s => !(s.exam_id === sub.exam_id && s.student_id === sub.student_id));
+      filtered.push(newSub);
+      mockDB.saveCbtSubmissions(filtered);
+      return newSub;
+    }
+  },
+
+  async releaseCBTResults(examId: string): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase!
+        .from('cbt_submissions')
+        .update({ status: 'released' })
+        .eq('exam_id', examId);
+      if (error) throw error;
+    } else {
+      const subs = mockDB.getCbtSubmissions();
+      const updated = subs.map(s => {
+        if (s.exam_id === examId) {
+          return { ...s, status: 'released' as const };
+        }
+        return s;
+      });
+      mockDB.saveCbtSubmissions(updated);
     }
   }
 };

@@ -131,4 +131,39 @@ export interface StudentSubject {
   created_at?: string;
 }
 
+export interface CBTExam {
+  id: string;
+  class_subject_id: string;
+  title: string;
+  duration_minutes: number;
+  status: 'draft' | 'pending_approval' | 'approved' | 'rejected';
+  created_by: string;
+  created_at: string;
+}
+
+export interface CBTQuestion {
+  id: string;
+  exam_id: string;
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  correct_option: 'A' | 'B' | 'C' | 'D';
+}
+
+export interface CBTSubmission {
+  id: string;
+  exam_id: string;
+  student_id: string;
+  answers: Record<string, string>;
+  score: number;
+  total_questions: number;
+  tab_switch_count: number;
+  noise_spike_count: number;
+  proctor_violated: boolean;
+  status: 'submitted' | 'released';
+  submitted_at: string;
+}
+
 

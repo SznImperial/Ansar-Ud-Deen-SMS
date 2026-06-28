@@ -21,7 +21,8 @@ import {
   Settings,
   Sun,
   Moon,
-  Award
+  Award,
+  ClipboardList
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -102,6 +103,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: 'Timetable Builder', href: '/admin/timetable', icon: Calendar },
     { label: 'Fee Records', href: '/admin/fees', icon: CreditCard },
     { label: 'Broadsheet', href: '/admin/broadsheet', icon: Award },
+    { label: 'CBT Manager', href: '/admin/cbt', icon: ClipboardList },
     { label: 'Notifications', href: '/admin/notifications', icon: Bell },
     { label: 'Portal Settings', href: '/admin/settings', icon: Settings },
   ];
@@ -111,6 +113,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: 'Assignments', href: '/teacher/assignments', icon: BookOpen },
     { label: 'Mark Attendance', href: '/teacher/attendance', icon: UserCheck },
     { label: 'Grade Entry', href: '/teacher/grades', icon: FileText },
+    { label: 'CBT Exams', href: '/teacher/cbt', icon: ClipboardList },
     { label: 'My Timetable', href: '/teacher/timetable', icon: Calendar },
     { label: 'Portal Settings', href: '/teacher/settings', icon: Settings },
   ];
@@ -118,6 +121,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const studentLinks = [
     { label: 'My Dashboard', href: '/student', icon: LayoutDashboard },
     { label: 'Assignments', href: '/student/assignments', icon: BookOpen },
+    { label: 'Online Exams (CBT)', href: '/student/cbt', icon: ClipboardList },
     { label: 'Report Card', href: '/student/grades', icon: FileText },
     { label: 'Attendance Log', href: '/student/attendance', icon: UserCheck },
     { label: 'Fee Status', href: '/student/fees', icon: CreditCard },
