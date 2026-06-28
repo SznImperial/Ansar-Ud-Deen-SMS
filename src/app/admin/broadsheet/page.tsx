@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { dbService } from '@/lib/db';
 import * as T from '@/lib/types';
-import { Award, Search, Trophy, Filter, X, ArrowUpRight, TrendingUp, TrendingDown, BookOpen, AlertCircle, ListOrdered, BarChart3 } from 'lucide-react';
+import { Award, Search, Trophy, Filter, X, ArrowUpRight, TrendingUp, TrendingDown, BookOpen, AlertCircle, ListOrdered, BarChart3, PieChart } from 'lucide-react';
 
 interface StudentPerformanceSummary {
   studentId: string;
@@ -15,6 +15,21 @@ interface StudentPerformanceSummary {
   averageScore: number;
   subjectsCount: number;
   overallRank: number;
+}
+
+interface SubjectPerformanceShare {
+  subjectId: string;
+  subjectName: string;
+  topPerformersCount: number;
+  percent: number;
+  color: string;
+}
+
+interface ClassAverageRanking {
+  classId: string;
+  className: string;
+  average: number;
+  studentCount: number;
 }
 
 export default function BroadsheetPage() {
@@ -41,6 +56,10 @@ export default function BroadsheetPage() {
   const [broadsheetRows, setBroadsheetRows] = useState<StudentPerformanceSummary[]>([]);
   const [activeClassSubjects, setActiveClassSubjects] = useState<T.ClassSubject[]>([]);
   const [subjectRanks, setSubjectRanks] = useState<Record<string, Record<string, number>>>({}); // classSubjectId -> studentId -> rank
+  
+  // Analytics charts states
+  const [subjectShares, setSubjectShares] = useState<SubjectPerformanceShare[]>([]);
+  const [classRankings, setClassRankings] = useState<ClassAverageRanking[]>([]);
 
   const loadData = async () => {
     setLoading(true);
@@ -74,7 +93,7 @@ export default function BroadsheetPage() {
     loadData();
   }, []);
 
-  // Compute Broadsheet Data
+  // Compute Broadsheet Data and Analytics Charts
   useEffect(() => {
     if (!selectedClassId) return;
 
@@ -89,15 +108,15 @@ export default function BroadsheetPage() {
     const classStudentIds = new Set(classStudents.map(s => s.id));
     const termGrades = grades.filter(g => 
       g.term === term && 
-      g.academic_year === academicYear && 
-      classStudentIds.has(g.student_id)
+      g.academic_year === academicYear
     );
+    const selectedClassGrades = termGrades.filter(g => classStudentIds.has(g.student_id));
 
     // 4. Calculate subject ranks
     const ranksBySubject: Record<string, Record<string, number>> = {};
     
     currentClassSubjects.forEach(cs => {
-      const subjectGrades = termGrades.filter(g => g.class_subject_id === cs.id);
+      const subjectGrades = selectedClassGrades.filter(g => g.class_subject_id === cs.id);
       // Sort descending by score
       const sorted = [...subjectGrades].sort((a, b) => b.total_score - a.total_score);
       
@@ -115,7 +134,7 @@ export default function BroadsheetPage() {
 
     // 5. Generate Student Summaries
     const summaries: StudentPerformanceSummary[] = classStudents.map(student => {
-      const studentGrades = termGrades.filter(g => g.student_id === student.id);
+      const studentGrades = selectedClassGrades.filter(g => g.student_id === student.id);
       
       const subjectScores: Record<string, number> = {};
       let total = 0;
@@ -153,7 +172,78 @@ export default function BroadsheetPage() {
     });
 
     setBroadsheetRows(sortedSummaries);
-  }, [selectedClassId, term, academicYear, students, classSubjects, grades]);
+
+    // 7. Calculate "Subjects Where Students Are Performing Most" (High Performance Share)
+    // Filter grades for distinction level (>= 75%) or high credit (>= 60%) if 75% has too few records
+    let threshold = 70;
+    let highGrades = selectedClassGrades.filter(g => g.total_score >= threshold);
+    
+    if (highGrades.length === 0) {
+      threshold = 50; // fallback to pass marks
+      highGrades = selectedClassGrades.filter(g => g.total_score >= threshold);
+    }
+    if (highGrades.length === 0) {
+      threshold = 0; // fallback to all scores
+      highGrades = selectedClassGrades;
+    }
+
+    const subjectCounts: Record<string, number> = {};
+    highGrades.forEach(g => {
+      // Find subject ID from class subject ID
+      const cs = currentClassSubjects.find(x => x.id === g.class_subject_id);
+      if (cs) {
+        subjectCounts[cs.subject_id] = (subjectCounts[cs.subject_id] || 0) + 1;
+      }
+    });
+
+    const totalHighGrades = Object.values(subjectCounts).reduce((a, b) => a + b, 0);
+    const colors = [
+      '#10b981', // Emerald
+      '#3b82f6', // Royal Blue
+      '#f59e0b', // Amber
+      '#8b5cf6', // Purple
+      '#ec4899', // Pink
+      '#f43f5e', // Rose
+      '#06b6d4', // Cyan
+      '#6366f1'  // Indigo
+    ];
+
+    const shares: SubjectPerformanceShare[] = Object.entries(subjectCounts).map(([subId, count], idx) => {
+      const sub = subjects.find(s => s.id === subId);
+      return {
+        subjectId: subId,
+        subjectName: sub ? sub.name : 'Unknown Subject',
+        topPerformersCount: count,
+        percent: totalHighGrades > 0 ? (count / totalHighGrades) * 100 : 0,
+        color: colors[idx % colors.length]
+      };
+    }).sort((a, b) => b.topPerformersCount - a.topPerformersCount);
+
+    setSubjectShares(shares);
+
+    // 8. Calculate School-wide Class Averages Comparison
+    const rankList: ClassAverageRanking[] = classes.map(cls => {
+      const clsStudents = students.filter(s => s.class_id === cls.id);
+      const clsStudentIds = new Set(clsStudents.map(s => s.id));
+      const clsGrades = termGrades.filter(g => clsStudentIds.has(g.student_id));
+      
+      const sum = clsGrades.reduce((acc, curr) => acc + curr.total_score, 0);
+      const avg = clsGrades.length > 0 ? sum / clsGrades.length : 0;
+
+      return {
+        classId: cls.id,
+        className: cls.name,
+        average: avg,
+        studentCount: clsStudents.length
+      };
+    })
+    // Filter out classes with no graded students to keep charts clean
+    .filter(item => item.average > 0)
+    .sort((a, b) => b.average - a.average);
+
+    setClassRankings(rankList);
+
+  }, [selectedClassId, term, academicYear, students, classes, classSubjects, grades, subjects]);
 
   // Handle Search Filtering
   const filteredRows = broadsheetRows.filter(row => 
@@ -168,6 +258,9 @@ export default function BroadsheetPage() {
     : 0;
   const topPerformer = broadsheetRows.find(r => r.overallRank === 1);
 
+  // Get highest average class overall
+  const highestAvgClass = classRankings.length > 0 ? classRankings[0] : null;
+
   // Helper for rank suffix
   const getRankSuffix = (rank: number) => {
     if (rank === 1) return '1st';
@@ -177,9 +270,9 @@ export default function BroadsheetPage() {
   };
 
   const getRankStyle = (rank: number) => {
-    if (rank === 1) return 'bg-amber-100 text-amber-800 border border-amber-250';
-    if (rank === 2) return 'bg-slate-100 text-slate-800 border border-slate-250';
-    if (rank === 3) return 'bg-orange-100 text-orange-850 border border-orange-250';
+    if (rank === 1) return 'bg-amber-100 text-amber-800 border border-amber-255';
+    if (rank === 2) return 'bg-slate-100 text-slate-800 border border-slate-255';
+    if (rank === 3) return 'bg-orange-100 text-orange-850 border border-orange-255';
     return 'bg-gray-50 text-gray-500 border border-gray-150';
   };
 
@@ -232,6 +325,22 @@ export default function BroadsheetPage() {
     return subjectGrades.slice(0, 3);
   };
 
+  // Build Conic Gradient for the Custom CSS Donut Chart
+  const getDonutStyle = () => {
+    if (subjectShares.length === 0) return { background: '#e5e7eb' };
+    
+    let cumulative = 0;
+    const slices = subjectShares.map(share => {
+      const start = cumulative;
+      cumulative += share.percent;
+      return `${share.color} ${start.toFixed(1)}% ${cumulative.toFixed(1)}%`;
+    });
+
+    return {
+      background: `conic-gradient(${slices.join(', ')})`
+    };
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -257,7 +366,7 @@ export default function BroadsheetPage() {
               <select
                 value={selectedClassId}
                 onChange={e => setSelectedClassId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               >
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -271,7 +380,7 @@ export default function BroadsheetPage() {
               <select
                 value={term}
                 onChange={e => setTerm(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               >
                 <option value="1st Term">1st Term</option>
                 <option value="2nd Term">2nd Term</option>
@@ -287,7 +396,7 @@ export default function BroadsheetPage() {
                 required
                 value={academicYear}
                 onChange={e => setAcademicYear(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -302,7 +411,7 @@ export default function BroadsheetPage() {
                   className={`px-3 py-1.5 rounded-md font-extrabold text-[10px] uppercase flex items-center gap-1 cursor-pointer transition-colors ${
                     viewMode === 'scores' 
                       ? 'bg-primary text-white shadow-xs' 
-                      : 'text-gray-500 hover:text-gray-900'
+                      : 'text-gray-500 hover:text-gray-955'
                   }`}
                 >
                   <BarChart3 className="h-3.5 w-3.5" />
@@ -313,7 +422,7 @@ export default function BroadsheetPage() {
                   className={`px-3 py-1.5 rounded-md font-extrabold text-[10px] uppercase flex items-center gap-1 cursor-pointer transition-colors ${
                     viewMode === 'ranks' 
                       ? 'bg-primary text-white shadow-xs' 
-                      : 'text-gray-500 hover:text-gray-900'
+                      : 'text-gray-500 hover:text-gray-955'
                   }`}
                 >
                   <ListOrdered className="h-3.5 w-3.5" />
@@ -328,7 +437,7 @@ export default function BroadsheetPage() {
               <input
                 type="text"
                 placeholder="Search student..."
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-xs bg-white text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-xs bg-white text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -388,6 +497,109 @@ export default function BroadsheetPage() {
               </div>
             </div>
 
+            {/* NEW: Analytical Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Pie/Donut Chart for Subject Performance Share */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-xs space-y-4">
+                <div className="border-b border-gray-150 pb-2 flex items-center gap-2">
+                  <PieChart className="h-4.5 w-4.5 text-primary" />
+                  <div>
+                    <h3 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider">Subject Performance Share</h3>
+                    <p className="text-[9px] text-gray-450 font-medium">Distribution of distinction/high scores (&ge;70%) per subject</p>
+                  </div>
+                </div>
+
+                {subjectShares.length === 0 ? (
+                  <div className="flex items-center justify-center h-48 text-[10px] text-gray-400 italic">
+                    No distinction-level scores recorded in this term to draw distribution.
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
+                    {/* CSS Donut Chart */}
+                    <div className="relative h-36 w-36 shrink-0 rounded-full shadow-inner flex items-center justify-center transition-transform hover:scale-105 duration-250" style={getDonutStyle()}>
+                      {/* Center hole to make it a donut */}
+                      <div className="absolute h-24 w-24 bg-white rounded-full flex flex-col items-center justify-center">
+                        <span className="text-xs font-extrabold text-gray-900 leading-none">Distinctions</span>
+                        <span className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">Class Share</span>
+                      </div>
+                    </div>
+
+                    {/* Legend Swatches */}
+                    <div className="space-y-1.5 flex-1 min-w-[150px]">
+                      {subjectShares.slice(0, 5).map((share, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-[10px]">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: share.color }}></span>
+                            <span className="font-bold text-gray-700 truncate" title={share.subjectName}>{share.subjectName}</span>
+                          </div>
+                          <span className="font-extrabold text-gray-900 shrink-0 ml-2">
+                            {share.percent.toFixed(0)}% ({share.topPerformersCount})
+                          </span>
+                        </div>
+                      ))}
+                      {subjectShares.length > 5 && (
+                        <div className="text-[9px] text-gray-400 italic pl-4">
+                          + {subjectShares.length - 5} other subjects mapped
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Class rankings comparison bar chart */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-xs space-y-4">
+                <div className="border-b border-gray-150 pb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-4.5 w-4.5 text-amber-500" />
+                    <div>
+                      <h3 className="text-xs font-extrabold text-gray-900 uppercase tracking-wider">Class Performance Rankings</h3>
+                      <p className="text-[9px] text-gray-450 font-medium">Comparison of overall averages across all school classes</p>
+                    </div>
+                  </div>
+                  {highestAvgClass && (
+                    <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-100 rounded-md font-extrabold text-[9px] flex items-center gap-1 animate-pulse">
+                      Top: {highestAvgClass.className}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-3.5 py-1">
+                  {classRankings.length === 0 ? (
+                    <div className="flex items-center justify-center h-48 text-[10px] text-gray-400 italic">
+                      No comparative class averages available.
+                    </div>
+                  ) : (
+                    classRankings.slice(0, 4).map((rank, idx) => (
+                      <div key={rank.classId} className="space-y-1.5">
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-extrabold text-gray-400 shrink-0">#{idx + 1}</span>
+                            <span className="text-gray-800 truncate">{rank.className}</span>
+                            <span className="text-[9px] text-gray-400 font-medium">({rank.studentCount} Students)</span>
+                          </div>
+                          <span className={`font-extrabold ${idx === 0 ? 'text-amber-600' : 'text-primary'}`}>
+                            {rank.average.toFixed(1)}% Avg
+                          </span>
+                        </div>
+                        {/* Custom horizontal progress bar chart */}
+                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden flex">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              idx === 0 
+                                ? 'bg-gradient-to-r from-amber-500 to-amber-400' 
+                                : 'bg-primary'
+                            }`}
+                            style={{ width: `${rank.average}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Broadsheet Table Card */}
             <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
               <div className="p-4 border-b border-gray-150 bg-gray-50/50 flex justify-between items-center text-xs font-bold text-gray-700">
@@ -416,7 +628,7 @@ export default function BroadsheetPage() {
                   <tbody className="divide-y divide-gray-100">
                     {filteredRows.length === 0 ? (
                       <tr>
-                        <td colSpan={5 + activeClassSubjects.length} className="p-8 text-center text-gray-500 font-semibold bg-white">
+                        <td colSpan={5 + activeClassSubjects.length} className="p-8 text-center text-gray-505 font-semibold bg-white">
                           No students matching search query.
                         </td>
                       </tr>
@@ -614,7 +826,7 @@ export default function BroadsheetPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {getStudentStrengthsAndWeaknesses(selectedStudentSummary).strengths.map((item, idx) => (
-                      <div key={idx} className="flex flex-col justify-center p-2.5 bg-emerald-50 text-emerald-950 border border-emerald-100 rounded-lg min-h-[52px]">
+                      <div key={idx} className="flex flex-col justify-center p-2.5 bg-emerald-50 text-emerald-955 border border-emerald-100 rounded-lg min-h-[52px]">
                         <span className="text-[9px] uppercase text-emerald-700 font-extrabold truncate" title={item.subjectName}>
                           {item.subjectName}
                         </span>
@@ -635,7 +847,7 @@ export default function BroadsheetPage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {getStudentStrengthsAndWeaknesses(selectedStudentSummary).weaknesses.map((item, idx) => (
-                      <div key={idx} className="flex flex-col justify-center p-2.5 bg-orange-50 text-orange-950 border border-orange-100 rounded-lg min-h-[52px]">
+                      <div key={idx} className="flex flex-col justify-center p-2.5 bg-orange-50 text-orange-955 border border-orange-100 rounded-lg min-h-[52px]">
                         <span className="text-[9px] uppercase text-orange-700 font-extrabold truncate" title={item.subjectName}>
                           {item.subjectName}
                         </span>
@@ -658,7 +870,7 @@ export default function BroadsheetPage() {
                 <div className="border border-gray-150 rounded-xl overflow-hidden">
                   <table className="w-full text-left border-collapse text-[11px] font-semibold bg-white">
                     <thead>
-                      <tr className="bg-gray-50 border-b border-gray-150 text-gray-500 font-bold">
+                      <tr className="bg-gray-50 border-b border-gray-150 text-gray-505 font-bold">
                         <th className="p-3">Subject</th>
                         <th className="p-3 text-center">Score</th>
                         <th className="p-3 text-center">Class Rank</th>
