@@ -293,8 +293,8 @@ function CBTTerminalContent() {
       });
 
       router.replace('/student/cbt');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('CBT submission failed:', err.message || err);
       setSubmitting(false);
     }
   };
