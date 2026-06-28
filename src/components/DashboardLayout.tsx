@@ -20,7 +20,8 @@ import {
   X,
   Settings,
   Sun,
-  Moon
+  Moon,
+  Award
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -100,6 +101,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: 'Classes & Subjects', href: '/admin/curriculum', icon: BookOpen },
     { label: 'Timetable Builder', href: '/admin/timetable', icon: Calendar },
     { label: 'Fee Records', href: '/admin/fees', icon: CreditCard },
+    { label: 'Broadsheet', href: '/admin/broadsheet', icon: Award },
     { label: 'Notifications', href: '/admin/notifications', icon: Bell },
     { label: 'Portal Settings', href: '/admin/settings', icon: Settings },
   ];
