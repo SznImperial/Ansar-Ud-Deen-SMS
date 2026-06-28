@@ -33,6 +33,7 @@ function CBTTerminalContent() {
   
   // Media Devices
   const [mediaError, setMediaError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const videoRef = useRef<HTMLVideoElement | null>(null);
   
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -295,6 +296,7 @@ function CBTTerminalContent() {
       router.replace('/student/cbt');
     } catch (err: any) {
       console.error('CBT submission failed:', err.message || err);
+      setSubmitError(err.message || 'CBT exam submission failed. Please verify connection and try again.');
       setSubmitting(false);
     }
   };
@@ -479,6 +481,16 @@ function CBTTerminalContent() {
         
         {/* Left Columns - Renders Active MCQ */}
         <div className="lg:col-span-3 flex flex-col justify-between bg-white border border-gray-200 rounded-2xl p-6 shadow-xs min-h-[50vh]">
+          {submitError && (
+            <div className="mb-4 p-3.5 bg-red-50 text-red-800 border border-red-150 rounded-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
+              <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-extrabold text-xs">Submission Failed</p>
+                <p className="font-medium text-[10px] leading-relaxed">{submitError}</p>
+              </div>
+            </div>
+          )}
+
           {currentQuestion ? (
             <div className="space-y-6">
               {/* Question Index Title */}
