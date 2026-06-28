@@ -30,6 +30,7 @@ function CBTTerminalContent() {
   const [noiseSpikes, setNoiseSpikes] = useState(0);
   const [isViolated, setIsViolated] = useState(false);
   const [fullscreenError, setFullscreenError] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(false);
   
   // Media Devices
   const [mediaError, setMediaError] = useState('');
@@ -132,20 +133,30 @@ function CBTTerminalContent() {
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        setIsBlurred(true);
         triggerViolationWarning();
+      } else {
+        setIsBlurred(false);
       }
     };
 
     const handleWindowBlur = () => {
+      setIsBlurred(true);
       triggerViolationWarning();
+    };
+
+    const handleWindowFocus = () => {
+      setIsBlurred(false);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('blur', handleWindowBlur);
+    window.addEventListener('focus', handleWindowFocus);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('blur', handleWindowBlur);
+      window.removeEventListener('focus', handleWindowFocus);
     };
   }, [examStarted, isViolated, submitting, noiseSpikes]);
 
@@ -182,8 +193,11 @@ function CBTTerminalContent() {
   const startProctoringStreams = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240 },
-        audio: true
+        video: true,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true
+        }
       });
       mediaStreamRef.current = stream;
 
@@ -202,23 +216,27 @@ function CBTTerminalContent() {
       audioContextRef.current = audioCtx;
       audioAnalyserRef.current = analyser;
 
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
+      const bufferLength = analyser.fftSize;
+      const dataArray = new Float32Array(bufferLength);
 
       // Periodically check decibel volume levels
       micIntervalRef.current = setInterval(() => {
         if (!audioAnalyserRef.current) return;
-        audioAnalyserRef.current.getByteFrequencyData(dataArray);
+        audioAnalyserRef.current.getFloatTimeDomainData(dataArray);
         
-        // Compute average sound level
+        // Calculate RMS (Root Mean Square) amplitude
         let sum = 0;
         for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
+          sum += dataArray[i] * dataArray[i];
         }
-        const avg = sum / bufferLength;
+        const rms = Math.sqrt(sum / bufferLength);
 
-        // If average level exceeds voice/noise threshold (e.g. 60 decibel equivalent)
-        if (avg > 65) {
+        // Convert amplitude to dBFS
+        let db = 20 * Math.log10(rms);
+        if (!isFinite(db)) db = -100; // handle absolute silence
+
+        // -40 dBFS is our threshold for speaking or loud ambient noise
+        if (db > -40) {
           setNoiseSpikes(prev => prev + 1);
         }
       }, 1000);
@@ -662,6 +680,19 @@ function CBTTerminalContent() {
             >
               Re-enter Fullscreen Mode
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Renders screen blur focus lock overlay (Screenshot protection) */}
+      {isBlurred && !isViolated && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-md z-45 flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 p-8 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-lg animate-in fade-in zoom-in-95 duration-150">
+            <ShieldAlert className="h-12 w-12 text-primary mx-auto animate-bounce" />
+            <h2 className="text-sm font-extrabold uppercase text-gray-900">Exam Screen Locked</h2>
+            <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
+              The exam window lost focus (possibly due to an attempted screenshot, app swap, or clicking outside the window). Click back inside the page to resume.
+            </p>
           </div>
         </div>
       )}
