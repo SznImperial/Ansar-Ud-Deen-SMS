@@ -36,6 +36,15 @@ function CBTTerminalContent() {
   const [mediaError, setMediaError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Callback ref: the instant React mounts the <video> node into the DOM,
+  // this fires and binds the active webcam stream to it.
+  const videoCallbackRef = (node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && mediaStreamRef.current) {
+      node.srcObject = mediaStreamRef.current;
+    }
+  };
   
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -81,12 +90,7 @@ function CBTTerminalContent() {
     loadExam();
   }, [examId, user]);
 
-  // Bind video stream to video tag once elements are mounted
-  useEffect(() => {
-    if (examStarted && mediaStreamRef.current && videoRef.current) {
-      videoRef.current.srcObject = mediaStreamRef.current;
-    }
-  }, [examStarted]);
+  // (Video binding is handled by videoCallbackRef — no useEffect needed)
 
   // Window unload listener (Unload Prevention)
   useEffect(() => {
@@ -657,7 +661,7 @@ function CBTTerminalContent() {
             {/* Webcam Live Feed Feed Container */}
             <div className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-900 aspect-video flex items-center justify-center">
               <video 
-                ref={videoRef} 
+                ref={videoCallbackRef} 
                 autoPlay 
                 playsInline 
                 muted 

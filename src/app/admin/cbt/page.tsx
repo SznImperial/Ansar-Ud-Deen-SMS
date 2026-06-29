@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { dbService } from '@/lib/db';
 import * as T from '@/lib/types';
-import { Award, CheckCircle, XCircle, Eye, AlertCircle, Clock, ShieldAlert, Trophy, HelpCircle, FileCheck, CheckCircle2 } from 'lucide-react';
+import { Award, CheckCircle, XCircle, Eye, AlertCircle, Clock, ShieldAlert, Trophy, HelpCircle, FileCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export default function AdminCBTPage() {
   const [exams, setExams] = useState<T.CBTExam[]>([]);
@@ -411,9 +411,14 @@ export default function AdminCBTPage() {
                             <td className="p-3 text-center">
                               <div className="flex flex-col items-center gap-0.5">
                                 {sub.proctor_violated ? (
-                                  <span className="px-2 py-0.5 bg-red-50 text-red-850 border border-red-100 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                  <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[9px] flex items-center gap-1">
                                     <ShieldAlert className="h-3 w-3" />
                                     Violated Lockout
+                                  </span>
+                                ) : sub.tab_switch_count > 0 || sub.noise_spike_count > 5 ? (
+                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Integrity Warning
                                   </span>
                                 ) : (
                                   <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-md font-bold text-[9px]">
