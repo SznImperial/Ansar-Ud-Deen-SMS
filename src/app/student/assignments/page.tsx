@@ -262,17 +262,17 @@ export default function StudentAssignmentsPage() {
                             {subjectName} ({subjectCode})
                           </span>
                           {submission ? (
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-150 rounded-md font-extrabold text-[9px] uppercase">
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-md font-extrabold text-[9px] uppercase">
                               Submitted
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-150 rounded-md font-extrabold text-[9px] uppercase">
+                            <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-md font-extrabold text-[9px] uppercase">
                               To Do
                             </span>
                           )}
                         </div>
                         <h3 className="text-xs font-extrabold text-gray-900 mt-2 leading-tight font-sans">{assignment.title}</h3>
-                        <p className="text-gray-650 mt-1 font-medium whitespace-pre-line leading-relaxed">{assignment.description}</p>
+                        <p className="text-gray-600 mt-1 font-medium whitespace-pre-line leading-relaxed">{assignment.description}</p>
                       </div>
 
                       <div className="flex justify-between items-center pt-2.5 border-t border-gray-200/60">
@@ -318,13 +318,13 @@ export default function StudentAssignmentsPage() {
                         <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/40 rounded-md font-extrabold text-[9px] uppercase">
                           {subjectName}
                         </span>
-                        <h3 className="text-xs font-extrabold text-gray-955 mt-2 leading-tight font-sans">{assignment.title}</h3>
+                        <h3 className="text-xs font-extrabold text-gray-950 mt-2 leading-tight font-sans">{assignment.title}</h3>
                       </div>
                       
                       {submission && (
                         <button
                           onClick={() => handleOpenGrade(assignment.title, submission)}
-                          className="px-2.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-150 dark:bg-emerald-950/20 dark:text-emerald-450 hover:bg-emerald-100 hover:scale-[1.02] rounded-lg font-extrabold text-[10px] transition-all cursor-pointer whitespace-nowrap shrink-0"
+                          className="px-2.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 hover:bg-emerald-100 hover:scale-[1.02] rounded-lg font-extrabold text-[10px] transition-all cursor-pointer whitespace-nowrap shrink-0"
                         >
                           Grade: {submission.grade}
                         </button>
@@ -351,7 +351,7 @@ export default function StudentAssignmentsPage() {
               <form onSubmit={handleSubmission} className="p-6 space-y-4 text-xs font-semibold">
                 <div className="bg-gray-50 p-4 border border-gray-150 rounded-xl space-y-1">
                   <h4 className="font-extrabold text-gray-950 leading-tight">{selectedAssignment.title}</h4>
-                  <p className="text-gray-650 font-medium whitespace-pre-wrap leading-relaxed mt-1">{selectedAssignment.description}</p>
+                  <p className="text-gray-600 font-medium whitespace-pre-wrap leading-relaxed mt-1">{selectedAssignment.description}</p>
                 </div>
 
                 <div className="space-y-1">
@@ -442,7 +442,7 @@ export default function StudentAssignmentsPage() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 border border-gray-150 rounded-xl space-y-1 leading-normal font-medium text-gray-650">
+                <div className="bg-gray-50 p-4 border border-gray-150 rounded-xl space-y-1 leading-normal font-medium text-gray-600">
                   <span className="text-[9px] font-bold text-gray-450 uppercase tracking-wider block flex items-center gap-1 mb-1">
                     <Award className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                     Teacher's Feedback Remarks
@@ -499,7 +499,7 @@ export default function StudentAssignmentsPage() {
 
                 <button
                   onClick={() => setGradeModalOpen(false)}
-                  className="w-full py-2 bg-gray-150 hover:bg-gray-250 text-gray-800 rounded-lg font-bold transition-all cursor-pointer text-center"
+                  className="w-full py-2 bg-gray-150 hover:bg-gray-200 text-gray-800 rounded-lg font-bold transition-all cursor-pointer text-center"
                 >
                   Close Record
                 </button>

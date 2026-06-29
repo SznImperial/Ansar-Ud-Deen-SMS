@@ -306,7 +306,7 @@ export default function FeeManagementPage() {
                         <td className="p-4 text-right">
                           <button
                             onClick={() => handleOpenPaymentModal(student)}
-                            className="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-150 hover:bg-emerald-100 rounded-lg font-bold cursor-pointer transition-colors"
+                            className="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-100 hover:bg-emerald-100 rounded-lg font-bold cursor-pointer transition-colors"
                           >
                             Update Ledger
                           </button>
@@ -387,7 +387,7 @@ export default function FeeManagementPage() {
                   </div>
                 </div>
 
-                <div className="p-3 bg-red-50/50 border border-red-150 rounded-lg flex justify-between items-center">
+                <div className="p-3 bg-red-50/50 border border-red-100 rounded-lg flex justify-between items-center">
                   <span className="font-bold text-gray-700">Outstanding Balance:</span>
                   <span className="font-extrabold text-red-600 text-sm">₦{(amountOwed - amountPaid).toLocaleString()}</span>
                 </div>

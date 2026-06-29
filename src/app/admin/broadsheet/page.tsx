@@ -366,7 +366,7 @@ export default function BroadsheetPage() {
               <select
                 value={selectedClassId}
                 onChange={e => setSelectedClassId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               >
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -380,7 +380,7 @@ export default function BroadsheetPage() {
               <select
                 value={term}
                 onChange={e => setTerm(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               >
                 <option value="1st Term">1st Term</option>
                 <option value="2nd Term">2nd Term</option>
@@ -396,7 +396,7 @@ export default function BroadsheetPage() {
                 required
                 value={academicYear}
                 onChange={e => setAcademicYear(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white font-bold text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -405,13 +405,13 @@ export default function BroadsheetPage() {
             {/* View Mode Toggle */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] uppercase text-gray-400 font-extrabold tracking-wider block">Matrix Mode</span>
-              <div className="inline-flex rounded-lg border border-gray-250 p-0.5 bg-gray-50/50">
+              <div className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50/50">
                 <button
                   onClick={() => setViewMode('scores')}
                   className={`px-3 py-1.5 rounded-md font-extrabold text-[10px] uppercase flex items-center gap-1 cursor-pointer transition-colors ${
                     viewMode === 'scores' 
                       ? 'bg-primary text-white shadow-xs' 
-                      : 'text-gray-500 hover:text-gray-955'
+                      : 'text-gray-500 hover:text-gray-950'
                   }`}
                 >
                   <BarChart3 className="h-3.5 w-3.5" />
@@ -422,7 +422,7 @@ export default function BroadsheetPage() {
                   className={`px-3 py-1.5 rounded-md font-extrabold text-[10px] uppercase flex items-center gap-1 cursor-pointer transition-colors ${
                     viewMode === 'ranks' 
                       ? 'bg-primary text-white shadow-xs' 
-                      : 'text-gray-500 hover:text-gray-955'
+                      : 'text-gray-500 hover:text-gray-950'
                   }`}
                 >
                   <ListOrdered className="h-3.5 w-3.5" />
@@ -437,7 +437,7 @@ export default function BroadsheetPage() {
               <input
                 type="text"
                 placeholder="Search student..."
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-xs bg-white text-gray-955 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-xs bg-white text-gray-950 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
@@ -782,7 +782,7 @@ export default function BroadsheetPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full border border-gray-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-xs font-semibold">
             {/* Header */}
-            <div className="p-6 border-b border-gray-250 flex justify-between items-center bg-gray-50">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <div>
                 <span className={`px-2 py-0.5 border rounded-full font-bold uppercase tracking-wide text-[9px] ${getRankStyle(selectedStudentSummary.overallRank)}`}>
                   Overall: {getRankSuffix(selectedStudentSummary.overallRank)} Rank

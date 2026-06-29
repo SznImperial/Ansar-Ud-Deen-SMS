@@ -491,7 +491,7 @@ function CBTTerminalContent() {
   return (
     <div className="min-h-screen bg-gray-50 text-xs font-semibold flex flex-col justify-between select-none">
       {/* Top Banner stats */}
-      <header className="bg-white border-b border-gray-250 px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-xs">
+      <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
@@ -508,14 +508,14 @@ function CBTTerminalContent() {
         <div className="flex items-center gap-3">
           {/* Proctor Mini Statuses (Responsive) */}
           <div className="flex items-center gap-2">
-            <div className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold flex items-center gap-1.5 transition-all duration-205 ${
-              tabSwitches > 0 ? 'bg-red-50 text-red-650 border-red-100' : 'bg-gray-50 text-gray-600 border-gray-150'
+            <div className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold flex items-center gap-1.5 transition-all duration-200 ${
+              tabSwitches > 0 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-gray-50 text-gray-600 border-gray-150'
             }`} title="Tab Switch warnings">
               <Monitor className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Switches:</span>
               <span>{tabSwitches}/3</span>
             </div>
-            <div className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold flex items-center gap-1.5 transition-all duration-205 ${
+            <div className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold flex items-center gap-1.5 transition-all duration-200 ${
               noiseSpikes > 5 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-gray-50 text-gray-600 border-gray-150'
             }`} title="Loud noise level warnings">
               <Mic className="h-3.5 w-3.5" />
@@ -527,7 +527,7 @@ function CBTTerminalContent() {
           {/* Live Timer */}
           <div className={`px-3 py-1.5 border rounded-xl flex items-center gap-2 font-mono text-xs lg:text-sm font-extrabold transition-all duration-300 ${
             timeLeft !== null && timeLeft < 120 
-              ? 'bg-red-50 text-red-600 border-red-150 animate-pulse' 
+              ? 'bg-red-50 text-red-600 border-red-100 animate-pulse' 
               : 'bg-gray-50 text-gray-800 border-gray-150'
           }`}>
             <Clock className="h-4 w-4 lg:h-5 lg:w-5" />
@@ -540,9 +540,9 @@ function CBTTerminalContent() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
         
         {/* Left Columns - Renders Active MCQ */}
-        <div className="lg:col-span-3 flex flex-col justify-between bg-white border border-gray-250 rounded-2xl p-5 lg:p-6 shadow-xs min-h-[55vh] transition-all duration-300">
+        <div className="lg:col-span-3 flex flex-col justify-between bg-white border border-gray-200 rounded-2xl p-5 lg:p-6 shadow-xs min-h-[55vh] transition-all duration-300">
           {submitError && (
-            <div className="mb-4 p-3.5 bg-red-50 text-red-850 border border-red-150 rounded-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="mb-4 p-3.5 bg-red-50 text-red-800 border border-red-100 rounded-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
               <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="font-extrabold text-xs">Submission Failed</p>
@@ -656,7 +656,7 @@ function CBTTerminalContent() {
         {/* Right Column - Navigation grid (Desktop sidebar, Hidden on mobile) */}
         <div className="hidden lg:flex lg:col-span-1 lg:flex-col lg:gap-6">
           {/* Question Grid Map */}
-          <div className="bg-white border border-gray-250 rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
             <span className="text-[10px] uppercase text-gray-400 font-extrabold tracking-wider block border-b border-gray-100 pb-1.5">Question Navigator</span>
             <div className="grid grid-cols-5 gap-2">
               {questions.map((q, idx) => {
@@ -691,7 +691,7 @@ function CBTTerminalContent() {
             {/* Tab Switches warning bar */}
             <div className="flex justify-between items-center text-[10px] font-bold">
               <span className="text-gray-500 flex items-center gap-1"><Monitor className="h-3.5 w-3.5 text-gray-400" /> Tab switches</span>
-              <span className={tabSwitches > 0 ? 'text-red-650' : 'text-gray-650'}>{tabSwitches} / 3 Allowed</span>
+              <span className={tabSwitches > 0 ? 'text-red-600' : 'text-gray-600'}>{tabSwitches} / 3 Allowed</span>
             </div>
             <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
               <div 
@@ -705,7 +705,7 @@ function CBTTerminalContent() {
             {/* Noise spikes counter */}
             <div className="flex justify-between items-center text-[10px] font-bold">
               <span className="text-gray-500 flex items-center gap-1"><Mic className="h-3.5 w-3.5 text-gray-400" /> Microphone spikes</span>
-              <span className={noiseSpikes > 5 ? 'text-amber-600' : 'text-gray-650'}>{noiseSpikes} Detected</span>
+              <span className={noiseSpikes > 5 ? 'text-amber-600' : 'text-gray-600'}>{noiseSpikes} Detected</span>
             </div>
           </div>
 

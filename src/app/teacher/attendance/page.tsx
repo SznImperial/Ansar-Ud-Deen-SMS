@@ -258,7 +258,7 @@ export default function MarkAttendancePage() {
                                     checked={status === 'absent'}
                                     onChange={() => handleStatusChange(student.id, 'absent')}
                                   />
-                                  <span className="text-red-650">Absent</span>
+                                  <span className="text-red-600">Absent</span>
                                 </label>
 
                                 <label className="flex items-center gap-1.5 cursor-pointer font-bold">
@@ -304,7 +304,7 @@ export default function MarkAttendancePage() {
                       <div key={student.id} className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3.5 shadow-xs premium-card-hover">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-extrabold text-gray-955 text-xs leading-tight font-sans">{student.full_name}</h4>
+                            <h4 className="font-extrabold text-gray-950 text-xs leading-tight font-sans">{student.full_name}</h4>
                             <p className="text-[9px] text-gray-400 font-mono mt-0.5">Admission: {student.admission_no}</p>
                           </div>
                         </div>

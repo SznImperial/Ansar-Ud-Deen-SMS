@@ -283,7 +283,7 @@ export default function TeacherAssignmentsPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteAssignment(assignment.id)}
-                        className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/25 dark:hover:bg-red-950/50 text-red-650 dark:text-red-400 border border-red-100 dark:border-red-950 rounded-lg font-bold transition-all cursor-pointer"
+                        className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/25 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-950 rounded-lg font-bold transition-all cursor-pointer"
                         title="Delete Assignment"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -482,7 +482,7 @@ export default function TeacherAssignmentsPage() {
                                   <p className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
                                     <Award className="h-3 w-3" /> Grade Feedback:
                                   </p>
-                                  <p className="text-gray-650 font-medium italic">"{submission.feedback || 'No written feedback.'}"</p>
+                                  <p className="text-gray-600 font-medium italic">"{submission.feedback || 'No written feedback.'}"</p>
                                 </div>
                               )}
 

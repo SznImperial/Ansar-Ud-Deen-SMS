@@ -291,7 +291,7 @@ export default function GradeEntryPage() {
                                 disabled={row.isSaving}
                                 className={`px-3 py-1.5 rounded-lg font-bold flex items-center justify-center gap-1.5 w-full cursor-pointer border transition-colors ${
                                   row.isSaved 
-                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-150 hover:bg-emerald-100' 
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-100 hover:bg-emerald-100' 
                                     : 'bg-primary hover:bg-primary-dark text-white border-transparent'
                                 }`}
                               >
@@ -329,10 +329,10 @@ export default function GradeEntryPage() {
                     const { total, letter, color } = calculateTotalAndGrade(row.caScore, row.examScore);
 
                     return (
-                      <div key={student.id} className="bg-white border border-gray-250 rounded-2xl p-4 space-y-3.5 shadow-xs premium-card-hover">
+                      <div key={student.id} className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3.5 shadow-xs premium-card-hover">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-extrabold text-gray-955 text-xs leading-tight font-sans">{student.full_name}</h4>
+                            <h4 className="font-extrabold text-gray-950 text-xs leading-tight font-sans">{student.full_name}</h4>
                             <p className="text-[9px] text-gray-400 font-mono mt-0.5">Admission: {student.admission_no}</p>
                           </div>
                         </div>
@@ -386,7 +386,7 @@ export default function GradeEntryPage() {
                             disabled={row.isSaving}
                             className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer border text-xs transition-colors ${
                               row.isSaved 
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-150 hover:bg-emerald-100' 
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-100 hover:bg-emerald-100' 
                                 : 'bg-primary hover:bg-primary-dark text-white border-transparent'
                             }`}
                           >

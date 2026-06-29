@@ -200,7 +200,7 @@ export default function StudentDashboard() {
         {/* Quick summaries widgets */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Attendance Widget */}
-          <Link href="/student/attendance" className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
+          <Link href="/student/attendance" className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attendance Rate</span>
               <h3 className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">{attRate.toFixed(0)}%</h3>
@@ -212,10 +212,10 @@ export default function StudentDashboard() {
           </Link>
 
           {/* Fees Widget */}
-          <Link href="/student/fees" className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
+          <Link href="/student/fees" className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tuition Balance</span>
-              <h3 className={`text-2xl font-extrabold ${feeBalance > 0 ? 'text-red-650 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+              <h3 className={`text-2xl font-extrabold ${feeBalance > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                 ₦{feeBalance.toLocaleString()}
               </h3>
               <p className="text-[10px] text-gray-500 font-semibold">Total Owed: ₦{totalOwed.toLocaleString()}</p>
@@ -226,7 +226,7 @@ export default function StudentDashboard() {
           </Link>
 
           {/* Grades Widget */}
-          <Link href="/student/grades" className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
+          <Link href="/student/grades" className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Report Cards</span>
               <h3 className="text-2xl font-extrabold text-blue-700 dark:text-blue-400">

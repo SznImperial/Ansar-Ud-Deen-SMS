@@ -130,7 +130,7 @@ export default function AdminDashboard() {
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
-              <div key={idx} className={`bg-white border border-gray-205 rounded-2xl p-6 shadow-xs flex items-center justify-between premium-card-hover`}>
+              <div key={idx} className={`bg-white border border-gray-200 rounded-2xl p-6 shadow-xs flex items-center justify-between premium-card-hover`}>
                 <div className="space-y-2">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{stat.title}</span>
                   <h3 className="text-3xl font-extrabold text-gray-900 leading-none">{stat.value}</h3>
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
                       <div className="flex items-start justify-between gap-4 text-xs font-semibold">
                         <div>
                           <h4 className="text-sm font-bold text-gray-900 font-sans">{notif.title}</h4>
-                          <p className="text-xs text-gray-650 mt-1 leading-relaxed">{notif.content}</p>
+                          <p className="text-xs text-gray-600 mt-1 leading-relaxed">{notif.content}</p>
                         </div>
                         <span className="text-[10px] font-bold text-gray-400 shrink-0 whitespace-nowrap bg-gray-50 px-2 py-0.5 rounded-md border border-gray-150">
                           Target: {notif.audience_type.toUpperCase()}

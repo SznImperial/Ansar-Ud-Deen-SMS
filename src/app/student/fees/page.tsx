@@ -125,7 +125,7 @@ export default function StudentFeesPage() {
                 <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Total Paid Tuition</span>
                 <span className="text-2xl font-extrabold mt-1 block">₦{totalPaid.toLocaleString()}</span>
               </div>
-              <div className={`p-5 rounded-xl shadow-xs border ${totalOutstanding > 0 ? 'bg-red-50 text-red-700 border-red-150' : 'bg-emerald-50 text-emerald-700 border-emerald-150'}`}>
+              <div className={`p-5 rounded-xl shadow-xs border ${totalOutstanding > 0 ? 'bg-red-50 text-red-700 border-red-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
                 <span className="text-[10px] font-bold uppercase tracking-wider block">Total Outstanding Balance</span>
                 <span className="text-2xl font-extrabold mt-1 block">₦{totalOutstanding.toLocaleString()}</span>
               </div>
@@ -188,7 +188,7 @@ export default function StudentFeesPage() {
             </div>
 
             {/* Note banner detailing manual payments */}
-            <div className="bg-emerald-50/50 border border-emerald-150 p-4 rounded-xl flex gap-3 text-xs">
+            <div className="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl flex gap-3 text-xs">
               <Info className="h-5 w-5 text-emerald-700 shrink-0 mt-0.5" />
               <div className="space-y-1 text-emerald-800">
                 <span className="font-extrabold block">Bursary Notice: Fee Payment Policy</span>

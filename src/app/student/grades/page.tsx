@@ -98,10 +98,10 @@ export default function StudentGradesPage() {
   const averageScore = totalSubjects > 0 ? totalScoreSum / totalSubjects : 0;
 
   const getEvaluation = (avg: number) => {
-    if (avg >= 70) return { label: 'Excellent Performance', style: 'text-emerald-700 bg-emerald-50 border-emerald-150' };
-    if (avg >= 60) return { label: 'Very Good Performance', style: 'text-blue-700 bg-blue-50 border-blue-150' };
-    if (avg >= 50) return { label: 'Satisfactory Performance', style: 'text-amber-700 bg-amber-50 border-amber-150' };
-    return { label: 'Needs Improvement', style: 'text-red-700 bg-red-50 border-red-150' };
+    if (avg >= 70) return { label: 'Excellent Performance', style: 'text-emerald-700 bg-emerald-50 border-emerald-100' };
+    if (avg >= 60) return { label: 'Very Good Performance', style: 'text-blue-700 bg-blue-50 border-blue-100' };
+    if (avg >= 50) return { label: 'Satisfactory Performance', style: 'text-amber-700 bg-amber-50 border-amber-100' };
+    return { label: 'Needs Improvement', style: 'text-red-700 bg-red-50 border-red-100' };
   };
 
   const evalBadge = getEvaluation(averageScore);

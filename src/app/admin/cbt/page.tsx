@@ -157,7 +157,7 @@ export default function AdminCBTPage() {
 
         {/* Tab Controls */}
         <div className="flex justify-start text-xs font-semibold">
-          <div className="inline-flex rounded-lg border border-gray-250 p-0.5 bg-gray-50/50">
+          <div className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50/50">
             <button
               onClick={() => setActiveTab('approvals')}
               className={`px-4 py-2 rounded-md font-bold transition-colors cursor-pointer ${
@@ -383,7 +383,7 @@ export default function AdminCBTPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-3xl w-full border shadow-xl overflow-hidden text-xs font-semibold animate-in fade-in zoom-in-95 duration-150">
             {/* Header */}
-            <div className="p-5 border-b border-gray-250 bg-gray-50 flex justify-between items-center">
+            <div className="p-5 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
               <div>
                 <h2 className="text-sm font-extrabold text-gray-900">Audit Student CBT Submissions</h2>
                 <p className="text-[10px] text-gray-400 mt-0.5">Inspect grades, proctoring violations logs, and release scores.</p>
@@ -600,7 +600,7 @@ export default function AdminCBTPage() {
                             {sub.status !== 'submitted' && (
                               <button
                                 onClick={() => handleUpdateSubmissionStatus(sub.id, 'submitted')}
-                                className="px-1.5 py-1 border border-gray-250 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded font-bold text-[9px] cursor-pointer"
+                                className="px-1.5 py-1 border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded font-bold text-[9px] cursor-pointer"
                               >
                                 Reset
                               </button>
@@ -615,7 +615,7 @@ export default function AdminCBTPage() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-gray-250 bg-gray-50 flex justify-between items-center">
+            <div className="p-5 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
               <span className="text-[10px] text-gray-400 font-bold">Release results to make grades visible on student dashboards.</span>
               <div className="flex gap-2">
                 <button

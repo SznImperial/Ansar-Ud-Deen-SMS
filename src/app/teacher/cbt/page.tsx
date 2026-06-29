@@ -166,11 +166,11 @@ export default function TeacherCBTPage() {
   const getStatusBadge = (status: T.CBTExam['status']) => {
     switch (status) {
       case 'approved':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-150';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-100';
       case 'pending_approval':
-        return 'bg-amber-50 text-amber-700 border-amber-150';
+        return 'bg-amber-50 text-amber-700 border-amber-100';
       case 'rejected':
-        return 'bg-red-50 text-red-700 border-red-150';
+        return 'bg-red-50 text-red-700 border-red-100';
       default:
         return 'bg-gray-50 text-gray-600 border-gray-150';
     }
@@ -198,7 +198,7 @@ export default function TeacherCBTPage() {
 
         {/* Tab Controls & Add Exam Button */}
         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 text-xs font-semibold">
-          <div className="inline-flex rounded-lg border border-gray-250 p-0.5 bg-gray-50/50">
+          <div className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50/50">
             <button
               onClick={() => setActiveTab('exams')}
               className={`px-4 py-2 rounded-md font-bold transition-colors cursor-pointer ${
@@ -377,7 +377,7 @@ export default function TeacherCBTPage() {
               {/* Mobile Card List View */}
               <div className="md:hidden block p-4 space-y-4">
                 {submissions.filter(s => exams.some(e => e.id === s.exam_id)).length === 0 ? (
-                  <div className="p-8 text-center text-gray-400 italic bg-white border border-gray-205 rounded-xl">
+                  <div className="p-8 text-center text-gray-400 italic bg-white border border-gray-200 rounded-xl">
                     No submissions recorded for your exams yet.
                   </div>
                 ) : (
@@ -512,7 +512,7 @@ export default function TeacherCBTPage() {
               <div>
                 <label className="block text-[10px] uppercase text-gray-400 font-extrabold tracking-wider mb-1">Class & Subject Allocation</label>
                 <select
-                  className="w-full px-3 py-2 border rounded-lg bg-white text-gray-955 font-bold"
+                  className="w-full px-3 py-2 border rounded-lg bg-white text-gray-950 font-bold"
                   value={selectedClassSubjectId}
                   onChange={e => setSelectedClassSubjectId(e.target.value)}
                 >
@@ -552,7 +552,7 @@ export default function TeacherCBTPage() {
                               ? 'bg-primary border-primary text-white shadow-xs scale-102'
                               : complete
                               ? 'bg-emerald-50/65 border-emerald-200 text-emerald-800 hover:bg-emerald-50'
-                              : 'bg-white border-gray-250 text-gray-650 hover:bg-gray-50'
+                              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                           }`}
                         >
                           <span>Q{i + 1}</span>
@@ -590,7 +590,7 @@ export default function TeacherCBTPage() {
                         rows={2}
                         required
                         placeholder="Type your question text here..."
-                        className="w-full px-3 py-2 border border-gray-250 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
                         value={questions[activeQuestionIdx].question_text}
                         onChange={e => handleQuestionChange(activeQuestionIdx, 'question_text', e.target.value)}
                       />
@@ -604,7 +604,7 @@ export default function TeacherCBTPage() {
                           type="text"
                           required
                           placeholder="Option A..."
-                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          className="w-full px-3 py-1.5 border border-gray-200 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
                           value={questions[activeQuestionIdx].option_a}
                           onChange={e => handleQuestionChange(activeQuestionIdx, 'option_a', e.target.value)}
                         />
@@ -615,7 +615,7 @@ export default function TeacherCBTPage() {
                           type="text"
                           required
                           placeholder="Option B..."
-                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          className="w-full px-3 py-1.5 border border-gray-200 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
                           value={questions[activeQuestionIdx].option_b}
                           onChange={e => handleQuestionChange(activeQuestionIdx, 'option_b', e.target.value)}
                         />
@@ -626,7 +626,7 @@ export default function TeacherCBTPage() {
                           type="text"
                           required
                           placeholder="Option C..."
-                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          className="w-full px-3 py-1.5 border border-gray-200 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
                           value={questions[activeQuestionIdx].option_c}
                           onChange={e => handleQuestionChange(activeQuestionIdx, 'option_c', e.target.value)}
                         />
@@ -637,7 +637,7 @@ export default function TeacherCBTPage() {
                           type="text"
                           required
                           placeholder="Option D..."
-                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          className="w-full px-3 py-1.5 border border-gray-200 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
                           value={questions[activeQuestionIdx].option_d}
                           onChange={e => handleQuestionChange(activeQuestionIdx, 'option_d', e.target.value)}
                         />
@@ -684,7 +684,7 @@ export default function TeacherCBTPage() {
                         type="button"
                         disabled={activeQuestionIdx === 0}
                         onClick={() => setActiveQuestionIdx(prev => prev - 1)}
-                        className="px-3.5 py-2 border border-gray-250 hover:bg-gray-50 disabled:opacity-45 rounded-lg flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed font-extrabold transition-colors text-gray-700"
+                        className="px-3.5 py-2 border border-gray-200 hover:bg-gray-50 disabled:opacity-45 rounded-lg flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed font-extrabold transition-colors text-gray-700"
                       >
                         ← Previous
                       </button>

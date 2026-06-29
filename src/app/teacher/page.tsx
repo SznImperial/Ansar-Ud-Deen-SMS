@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
 
         {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Assigned Classes</span>
               <h3 className="text-2xl font-extrabold text-gray-900">{myAllocations.length}</h3>
@@ -100,7 +100,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Weekly Periods</span>
               <h3 className="text-2xl font-extrabold text-gray-900">{timetableSlots.length}</h3>
@@ -111,7 +111,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Taught Pupils</span>
               <h3 className="text-2xl font-extrabold text-gray-900">
@@ -139,7 +139,7 @@ export default function TeacherDashboard() {
                   myAllocations.map(({ cs, cls, sub, studentCount }) => (
                     <div key={cs.id} className="p-4 border rounded-2xl bg-gray-50 border-gray-150 flex flex-col justify-between space-y-4 text-xs premium-card-hover">
                       <div>
-                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-150 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/40 rounded-md font-extrabold uppercase text-[9px]">
+                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/40 rounded-md font-extrabold uppercase text-[9px]">
                           {cls.name}
                         </span>
                         <h3 className="text-sm font-extrabold text-gray-900 mt-2 leading-tight font-sans">{sub.name}</h3>
