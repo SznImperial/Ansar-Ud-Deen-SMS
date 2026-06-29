@@ -270,97 +270,180 @@ export default function TeacherCBTPage() {
             <div className="p-4 border-b border-gray-150 bg-gray-50/50 text-xs font-bold text-gray-700">
               Exam Submissions & Scores
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-gray-100/75 border-b border-gray-200 font-bold text-gray-700">
-                    <th className="p-4">Student</th>
-                    <th className="p-4">Exam Paper</th>
-                    <th className="p-4 text-center">Score</th>
-                    <th className="p-4 text-center">Proctoring Log</th>
-                    <th className="p-4 text-center">Results Release</th>
-                    <th className="p-4">Submitted At</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {submissions.filter(s => {
-                    const ex = exams.find(e => e.id === s.exam_id);
-                    return ex !== undefined;
-                  }).length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-gray-500 font-semibold bg-white">
-                        No submissions recorded for your exams yet.
-                      </td>
+            <div className="p-0">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs bg-white">
+                  <thead>
+                    <tr className="bg-gray-100/75 border-b border-gray-200 font-bold text-gray-700">
+                      <th className="p-4">Student</th>
+                      <th className="p-4">Exam Paper</th>
+                      <th className="p-4 text-center">Score</th>
+                      <th className="p-4 text-center">Proctoring Log</th>
+                      <th className="p-4 text-center">Results Release</th>
+                      <th className="p-4">Submitted At</th>
                     </tr>
-                  ) : (
-                    submissions
-                      .filter(s => exams.some(e => e.id === s.exam_id))
-                      .map(sub => {
-                        const ex = exams.find(e => e.id === sub.exam_id);
-                        const std = students.find(s => s.id === sub.student_id);
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {submissions.filter(s => exams.some(e => e.id === s.exam_id)).length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-gray-500 font-semibold bg-white">
+                          No submissions recorded for your exams yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      submissions
+                        .filter(s => exams.some(e => e.id === s.exam_id))
+                        .map(sub => {
+                          const ex = exams.find(e => e.id === sub.exam_id);
+                          const std = students.find(s => s.id === sub.student_id);
 
-                        return (
-                          <tr key={sub.id} className="hover:bg-gray-50/30">
-                            <td className="p-4">
-                              <div className="font-bold text-gray-900">{std ? std.full_name : 'Unknown Student'}</div>
-                              <div className="text-[10px] text-gray-400 font-mono mt-0.5">{std?.admission_no}</div>
-                            </td>
-                            <td className="p-4">
-                              <div className="font-bold text-gray-805">{ex?.title}</div>
-                              <div className="text-[10px] text-gray-405 font-medium mt-0.5">{ex && getClassSubjectLabel(ex.class_subject_id)}</div>
-                            </td>
-                            <td className="p-4 text-center">
-                              <span className="font-extrabold text-primary">{sub.score} / {sub.total_questions}</span>
-                              <span className="text-[10px] text-gray-400 font-bold block mt-0.5">
-                                ({sub.total_questions > 0 ? ((sub.score / sub.total_questions) * 100).toFixed(0) : 0}%)
-                              </span>
-                            </td>
-                             <td className="p-4 text-center">
-                              <div className="flex flex-col items-center gap-1">
-                                {sub.proctor_violated ? (
-                                  <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[9px] flex items-center gap-1">
-                                    <ShieldAlert className="h-3 w-3" />
-                                    Violated Lockout
+                          return (
+                            <tr key={sub.id} className="hover:bg-gray-50/30">
+                              <td className="p-4">
+                                <div className="font-bold text-gray-900">{std ? std.full_name : 'Unknown Student'}</div>
+                                <div className="text-[10px] text-gray-400 font-mono mt-0.5">{std?.admission_no}</div>
+                              </td>
+                              <td className="p-4">
+                                <div className="font-bold text-gray-800">{ex?.title}</div>
+                                <div className="text-[10px] text-gray-500 font-medium mt-0.5">{ex && getClassSubjectLabel(ex.class_subject_id)}</div>
+                              </td>
+                              <td className="p-4 text-center">
+                                <span className="font-extrabold text-primary">{sub.score} / {sub.total_questions}</span>
+                                <span className="text-[10px] text-gray-400 font-bold block mt-0.5">
+                                  ({sub.total_questions > 0 ? ((sub.score / sub.total_questions) * 100).toFixed(0) : 0}%)
+                                </span>
+                              </td>
+                              <td className="p-4 text-center">
+                                <div className="flex flex-col items-center gap-1">
+                                  {sub.proctor_violated ? (
+                                    <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                      <ShieldAlert className="h-3 w-3" />
+                                      Violated Lockout
+                                    </span>
+                                  ) : sub.tab_switch_count > 0 || sub.noise_spike_count > 5 ? (
+                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                      <AlertTriangle className="h-3 w-3" />
+                                      Integrity Warning
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                      ✓ Integrity Passed
+                                    </span>
+                                  )}
+                                  <span className="text-[9px] text-gray-400 font-medium mt-0.5">
+                                    Switches: {sub.tab_switch_count} | Noise spikes: {sub.noise_spike_count}
                                   </span>
-                                ) : sub.tab_switch_count > 0 || sub.noise_spike_count > 5 ? (
-                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md font-bold text-[9px] flex items-center gap-1">
-                                    <AlertTriangle className="h-3 w-3" />
-                                    Integrity Warning
+                                </div>
+                              </td>
+                              <td className="p-4 text-center">
+                                {sub.status === 'released' ? (
+                                  <span className="px-2.5 py-0.8 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg font-bold text-[9px]">
+                                    Released
+                                  </span>
+                                ) : sub.status === 'withheld' ? (
+                                  <span className="px-2.5 py-0.8 bg-rose-50 text-rose-800 border border-rose-100 rounded-lg font-bold text-[9px]">
+                                    Withheld
                                   </span>
                                 ) : (
-                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-md font-bold text-[9px] flex items-center gap-1">
-                                    ✓ Integrity Passed
+                                  <span className="px-2.5 py-0.8 bg-amber-50 text-amber-800 border border-amber-100 rounded-lg font-bold text-[9px]">
+                                    Awaiting release
                                   </span>
                                 )}
-                                <span className="text-[9px] text-gray-400 font-medium mt-0.5">
-                                  Switches: {sub.tab_switch_count} | Noise spikes: {sub.noise_spike_count}
+                              </td>
+                              <td className="p-4 text-gray-500 font-medium">
+                                {new Date(sub.submitted_at).toLocaleString()}
+                              </td>
+                            </tr>
+                          );
+                        })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden block p-4 space-y-4">
+                {submissions.filter(s => exams.some(e => e.id === s.exam_id)).length === 0 ? (
+                  <div className="p-8 text-center text-gray-400 italic bg-white border border-gray-205 rounded-xl">
+                    No submissions recorded for your exams yet.
+                  </div>
+                ) : (
+                  submissions
+                    .filter(s => exams.some(e => e.id === s.exam_id))
+                    .map(sub => {
+                      const ex = exams.find(e => e.id === sub.exam_id);
+                      const std = students.find(s => s.id === sub.student_id);
+
+                      return (
+                        <div key={sub.id} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3.5 shadow-xs">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-extrabold text-gray-900 text-xs">{std ? std.full_name : 'Unknown Student'}</div>
+                              <div className="text-[9px] text-gray-400 font-mono mt-0.5">{std?.admission_no}</div>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-extrabold text-primary text-xs">{sub.score} / {sub.total_questions}</span>
+                              <span className="text-[9px] text-gray-400 font-bold block">
+                                ({sub.total_questions > 0 ? ((sub.score / sub.total_questions) * 100).toFixed(0) : 0}%)
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 p-2.5 rounded-lg space-y-2 text-[10px]">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-400 font-bold">Exam Paper:</span>
+                              <span className="text-gray-800 font-extrabold">{ex?.title}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-t border-gray-100 pt-1.5">
+                              <span className="text-gray-400 font-bold">Proctor status:</span>
+                              {sub.proctor_violated ? (
+                                <span className="px-1.5 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded font-bold flex items-center gap-0.5">
+                                  <ShieldAlert className="h-3 w-3" /> Violated
                                 </span>
-                              </div>
-                            </td>
-                            <td className="p-4 text-center">
-                              {sub.status === 'released' ? (
-                                <span className="px-2.5 py-0.8 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg font-bold text-[9px]">
-                                  Released
-                                </span>
-                              ) : sub.status === 'withheld' ? (
-                                <span className="px-2.5 py-0.8 bg-rose-50 text-rose-800 border border-rose-100 rounded-lg font-bold text-[9px]">
-                                  Withheld
+                              ) : sub.tab_switch_count > 0 || sub.noise_spike_count > 5 ? (
+                                <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded font-bold flex items-center gap-0.5">
+                                  <AlertTriangle className="h-3 w-3" /> Warning
                                 </span>
                               ) : (
-                                <span className="px-2.5 py-0.8 bg-amber-50 text-amber-800 border border-amber-100 rounded-lg font-bold text-[9px]">
-                                  Awaiting release
+                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded font-bold">
+                                  Passed
                                 </span>
                               )}
-                            </td>
-                            <td className="p-4 text-gray-500 font-medium">
-                              {new Date(sub.submitted_at).toLocaleString()}
-                            </td>
-                          </tr>
-                        );
-                      })
-                  )}
-                </tbody>
-              </table>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center text-[10px]">
+                            <span className="text-gray-400 font-bold">Violations log:</span>
+                            <span className="text-gray-600 font-extrabold">Switches: {sub.tab_switch_count} | Noise: {sub.noise_spike_count}</span>
+                          </div>
+
+                          <div className="flex justify-between items-center text-[10px]">
+                            <span className="text-gray-400 font-bold">Submitted:</span>
+                            <span className="text-gray-500 font-semibold">{new Date(sub.submitted_at).toLocaleString()}</span>
+                          </div>
+
+                          <div className="pt-2.5 border-t border-gray-100 flex justify-between items-center text-[10px]">
+                            <span className="text-gray-400 font-bold">Release status:</span>
+                            {sub.status === 'released' ? (
+                              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded font-bold">
+                                Released
+                              </span>
+                            ) : sub.status === 'withheld' ? (
+                              <span className="px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-100 rounded font-bold">
+                                Withheld
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-100 rounded font-bold">
+                                Awaiting release
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
             </div>
           </div>
         )}

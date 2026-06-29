@@ -397,8 +397,9 @@ export default function AdminCBTPage() {
             </div>
 
             {/* List */}
-            <div className="p-5 max-h-[50vh] overflow-y-auto pr-2">
-              <div className="border border-gray-150 rounded-xl overflow-hidden">
+            <div className="p-4 lg:p-5 max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+              {/* Desktop Table View */}
+              <div className="hidden md:block border border-gray-150 rounded-xl overflow-hidden">
                 <table className="w-full text-left border-collapse text-[11px] font-semibold bg-white">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-150 text-gray-500 font-bold">
@@ -509,6 +510,107 @@ export default function AdminCBTPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden block space-y-3.5">
+                {selectedExamSubmissions.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400 italic bg-white border border-gray-200 rounded-xl">
+                    No student submissions recorded for this exam yet.
+                  </div>
+                ) : (
+                  selectedExamSubmissions.map(sub => {
+                    const std = students.find(s => s.id === sub.student_id);
+                    return (
+                      <div key={sub.id} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-xs">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-extrabold text-gray-900 text-xs">{std ? std.full_name : 'Unknown Student'}</div>
+                            <div className="text-[9px] text-gray-400 font-mono mt-0.5">{std?.admission_no}</div>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-extrabold text-primary text-xs">{sub.score} / {sub.total_questions}</span>
+                            <span className="text-[9px] text-gray-400 font-bold block">
+                              ({sub.total_questions > 0 ? ((sub.score / sub.total_questions) * 100).toFixed(0) : 0}%)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Proctoring log row */}
+                        <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg text-[10px]">
+                          <span className="text-gray-400 font-bold">Proctor status:</span>
+                          {sub.proctor_violated ? (
+                            <span className="px-1.5 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded font-bold flex items-center gap-0.5">
+                              <ShieldAlert className="h-3 w-3" /> Violated
+                            </span>
+                          ) : sub.tab_switch_count > 0 || sub.noise_spike_count > 5 ? (
+                            <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded font-bold flex items-center gap-0.5">
+                              <AlertTriangle className="h-3 w-3" /> Warning
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded font-bold">
+                              Passed
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-gray-400 font-bold">Violations:</span>
+                          <span className="text-gray-600 font-extrabold">Switches: {sub.tab_switch_count} | Noise: {sub.noise_spike_count}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-gray-400 font-bold">Time submitted:</span>
+                          <span className="text-gray-500 font-semibold">{new Date(sub.submitted_at).toLocaleTimeString()}</span>
+                        </div>
+
+                        {/* Actions block */}
+                        <div className="pt-2.5 border-t border-gray-100 flex items-center justify-between gap-2.5">
+                          {sub.status === 'released' ? (
+                            <span className="px-2 py-0.5 bg-emerald-500 text-white rounded font-extrabold text-[8px] uppercase tracking-wider">
+                              Released
+                            </span>
+                          ) : sub.status === 'withheld' ? (
+                            <span className="px-2 py-0.5 bg-rose-500 text-white rounded font-extrabold text-[8px] uppercase tracking-wider">
+                              Withheld
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 bg-amber-500 text-white rounded font-extrabold text-[8px] uppercase tracking-wider">
+                              Pending
+                            </span>
+                          )}
+
+                          <div className="flex items-center gap-1.5">
+                            {sub.status !== 'released' && (
+                              <button
+                                onClick={() => handleUpdateSubmissionStatus(sub.id, 'released')}
+                                className="px-2 py-1 border border-emerald-250 bg-emerald-50 hover:bg-emerald-100 text-emerald-850 rounded font-bold text-[9px] cursor-pointer"
+                              >
+                                Release
+                              </button>
+                            )}
+                            {sub.status !== 'withheld' && (
+                              <button
+                                onClick={() => handleUpdateSubmissionStatus(sub.id, 'withheld')}
+                                className="px-2 py-1 border border-rose-250 bg-rose-50 hover:bg-rose-100 text-rose-850 rounded font-bold text-[9px] cursor-pointer"
+                              >
+                                Withhold
+                              </button>
+                            )}
+                            {sub.status !== 'submitted' && (
+                              <button
+                                onClick={() => handleUpdateSubmissionStatus(sub.id, 'submitted')}
+                                className="px-1.5 py-1 border border-gray-250 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded font-bold text-[9px] cursor-pointer"
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 

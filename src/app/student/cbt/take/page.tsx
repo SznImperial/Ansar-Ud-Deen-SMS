@@ -491,30 +491,58 @@ function CBTTerminalContent() {
   return (
     <div className="min-h-screen bg-gray-50 text-xs font-semibold flex flex-col justify-between select-none">
       {/* Top Banner stats */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-ping"></span>
-          <span className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Proctored CBT Terminal</span>
+      <header className="bg-white border-b border-gray-250 px-4 lg:px-6 py-3.5 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span className="font-extrabold text-xs lg:text-sm text-gray-900 uppercase tracking-wider">CBT Terminal</span>
+          </div>
+          {student && (
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 border border-gray-150 rounded-lg text-[10px] text-gray-500 font-extrabold uppercase">
+              <span>Candidate:</span>
+              <span className="text-gray-900">{student.full_name}</span>
+            </div>
+          )}
         </div>
 
-        {/* Live Timer */}
-        <div className={`px-4 py-2 border rounded-xl flex items-center gap-2 font-mono text-base font-extrabold ${
-          timeLeft !== null && timeLeft < 120 
-            ? 'bg-red-50 text-red-600 border-red-100 animate-pulse' 
-            : 'bg-gray-50 text-gray-800 border-gray-150'
-        }`}>
-          <Clock className="h-5 w-5" />
-          <span>{timeLeft !== null ? formatTime(timeLeft) : '0:00'}</span>
+        <div className="flex items-center gap-3">
+          {/* Proctor Mini Statuses (Responsive) */}
+          <div className="flex items-center gap-2">
+            <div className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold flex items-center gap-1.5 transition-all duration-205 ${
+              tabSwitches > 0 ? 'bg-red-50 text-red-650 border-red-100' : 'bg-gray-50 text-gray-600 border-gray-150'
+            }`} title="Tab Switch warnings">
+              <Monitor className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Switches:</span>
+              <span>{tabSwitches}/3</span>
+            </div>
+            <div className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold flex items-center gap-1.5 transition-all duration-205 ${
+              noiseSpikes > 5 ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-gray-50 text-gray-600 border-gray-150'
+            }`} title="Loud noise level warnings">
+              <Mic className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Spikes:</span>
+              <span>{noiseSpikes}</span>
+            </div>
+          </div>
+
+          {/* Live Timer */}
+          <div className={`px-3 py-1.5 border rounded-xl flex items-center gap-2 font-mono text-xs lg:text-sm font-extrabold transition-all duration-300 ${
+            timeLeft !== null && timeLeft < 120 
+              ? 'bg-red-50 text-red-600 border-red-150 animate-pulse' 
+              : 'bg-gray-50 text-gray-800 border-gray-150'
+          }`}>
+            <Clock className="h-4 w-4 lg:h-5 lg:w-5" />
+            <span>{timeLeft !== null ? formatTime(timeLeft) : '0:00'}</span>
+          </div>
         </div>
       </header>
 
       {/* Main Terminal Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
         
         {/* Left Columns - Renders Active MCQ */}
-        <div className="lg:col-span-3 flex flex-col justify-between bg-white border border-gray-200 rounded-2xl p-6 shadow-xs min-h-[50vh]">
+        <div className="lg:col-span-3 flex flex-col justify-between bg-white border border-gray-250 rounded-2xl p-5 lg:p-6 shadow-xs min-h-[55vh] transition-all duration-300">
           {submitError && (
-            <div className="mb-4 p-3.5 bg-red-50 text-red-800 border border-red-150 rounded-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="mb-4 p-3.5 bg-red-50 text-red-850 border border-red-150 rounded-lg flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
               <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="font-extrabold text-xs">Submission Failed</p>
@@ -524,15 +552,38 @@ function CBTTerminalContent() {
           )}
 
           {currentQuestion ? (
-            <div className="space-y-6">
-              {/* Question Index Title */}
+            <div className="space-y-5 lg:space-y-6">
+              {/* Question Index Title & Swipable indicator */}
               <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                <span className="font-extrabold text-primary text-sm">Question {currentIndex + 1} of {questions.length}</span>
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-extrabold">MCQ Single Selection</span>
+                <span className="font-extrabold text-primary text-xs lg:text-sm">Question {currentIndex + 1} of {questions.length}</span>
+                <span className="text-[9px] text-gray-400 uppercase tracking-wider font-extrabold">MCQ Single Selection</span>
+              </div>
+
+              {/* Mobile swipable question navigator */}
+              <div className="lg:hidden flex gap-1.5 overflow-x-auto py-1.5 border-b border-gray-50 scrollbar-none snap-x snap-mandatory">
+                {questions.map((q, idx) => {
+                  const isAnswered = answers[q.id] !== undefined;
+                  const isActive = idx === currentIndex;
+                  return (
+                    <button
+                      key={q.id}
+                      onClick={() => setCurrentIndex(idx)}
+                      className={`h-7 w-7 rounded-lg flex items-center justify-center font-bold text-[10px] shrink-0 border cursor-pointer snap-center transition-all ${
+                        isActive 
+                          ? 'border-primary ring-1 ring-primary bg-emerald-50 text-primary font-extrabold' 
+                          : isAnswered 
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800' 
+                            : 'border-gray-200 bg-white text-gray-400'
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Question Text */}
-              <h2 className="text-sm font-extrabold text-gray-900 leading-relaxed">
+              <h2 className="text-sm font-extrabold text-gray-900 leading-relaxed min-h-[4rem] flex items-center">
                 {currentQuestion.question_text}
               </h2>
 
@@ -549,14 +600,14 @@ function CBTTerminalContent() {
                     <button
                       key={opt.key}
                       onClick={() => handleSelectAnswer(currentQuestion.id, opt.key)}
-                      className={`w-full text-left p-4 border rounded-xl flex items-center gap-3 transition-colors cursor-pointer ${
+                      className={`w-full text-left p-4 border rounded-xl flex items-center gap-3 transition-all duration-200 hover:-translate-y-[1px] hover:shadow-xs hover:border-gray-300 active:translate-y-0 cursor-pointer ${
                         isSelected 
-                          ? 'border-primary bg-emerald-50/20 text-emerald-950 font-extrabold' 
-                          : 'border-gray-200 hover:bg-gray-50/50 text-gray-700'
+                          ? 'border-primary bg-emerald-50/20 text-emerald-950 font-extrabold shadow-xs' 
+                          : 'border-gray-200 hover:bg-gray-50/50 text-gray-700 font-medium'
                       }`}
                     >
-                      <span className={`h-6 w-6 rounded-full border flex items-center justify-center font-bold text-xs shrink-0 ${
-                        isSelected ? 'bg-primary text-white border-primary' : 'bg-gray-50 border-gray-300 text-gray-500'
+                      <span className={`h-6 w-6 rounded-full border flex items-center justify-center font-bold text-xs shrink-0 transition-all ${
+                        isSelected ? 'bg-primary text-white border-primary scale-110 shadow-xs' : 'bg-gray-50 border-gray-300 text-gray-500'
                       }`}>
                         {opt.key}
                       </span>
@@ -571,11 +622,11 @@ function CBTTerminalContent() {
           )}
 
           {/* Action navigators */}
-          <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+          <div className="flex justify-between items-center pt-6 border-t border-gray-100 mt-6">
             <button
               onClick={() => setCurrentIndex(prev => Math.max(0, prev - 1))}
               disabled={currentIndex === 0}
-              className="px-4 py-2 border border-gray-250 hover:bg-gray-50 disabled:opacity-30 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              className="px-4 py-2 border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:pointer-events-none rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
@@ -585,7 +636,7 @@ function CBTTerminalContent() {
               <button
                 onClick={handleSubmitExam}
                 disabled={submitting}
-                className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-extrabold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-extrabold flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors hover:shadow-sm"
               >
                 <CheckSquare className="h-4.5 w-4.5" />
                 Submit Exam Paper
@@ -593,7 +644,7 @@ function CBTTerminalContent() {
             ) : (
               <button
                 onClick={() => setCurrentIndex(prev => Math.min(questions.length - 1, prev + 1))}
-                className="px-4 py-2 border border-gray-250 hover:bg-gray-50 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-4 py-2 border border-gray-200 hover:bg-gray-50 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -602,11 +653,10 @@ function CBTTerminalContent() {
           </div>
         </div>
 
-        {/* Right Column - Navigation grid & Proctor indicators */}
-        <div className="space-y-6 flex flex-col justify-between">
-          
+        {/* Right Column - Navigation grid (Desktop sidebar, Hidden on mobile) */}
+        <div className="hidden lg:flex lg:col-span-1 lg:flex-col lg:gap-6">
           {/* Question Grid Map */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="bg-white border border-gray-250 rounded-2xl p-5 shadow-xs space-y-4">
             <span className="text-[10px] uppercase text-gray-400 font-extrabold tracking-wider block border-b border-gray-100 pb-1.5">Question Navigator</span>
             <div className="grid grid-cols-5 gap-2">
               {questions.map((q, idx) => {
@@ -619,7 +669,7 @@ function CBTTerminalContent() {
                     onClick={() => setCurrentIndex(idx)}
                     className={`h-8 rounded-lg flex items-center justify-center font-bold text-xs border cursor-pointer transition-all ${
                       isActive 
-                        ? 'border-primary ring-1 ring-primary bg-emerald-50/20 text-primary font-extraboldScale' 
+                        ? 'border-primary ring-1 ring-primary bg-emerald-50/20 text-primary font-extrabold' 
                         : isAnswered 
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-800' 
                           : 'border-gray-200 hover:bg-gray-50 bg-white text-gray-500'
@@ -631,49 +681,50 @@ function CBTTerminalContent() {
               })}
             </div>
           </div>
+        </div>
 
-          {/* Proctoring live alerts card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4">
+        {/* Proctoring live alerts & Webcam card (Floating PIP on mobile, sidebar item on desktop) */}
+        <div className="lg:col-span-1 bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-4 lg:relative lg:block max-lg:fixed max-lg:bottom-4 max-lg:right-4 max-lg:z-40 max-lg:w-28 max-lg:h-20 max-lg:p-0.5 max-lg:border-2 max-lg:border-white max-lg:shadow-lg max-lg:bg-gray-900 max-lg:overflow-hidden max-lg:rounded-xl">
+          <div className="lg:block hidden space-y-3">
             <span className="text-[10px] uppercase text-gray-400 font-extrabold tracking-wider block border-b border-gray-100 pb-1.5">Proctoring status</span>
             
-            <div className="space-y-3">
-              {/* Tab Switches warning bar */}
-              <div className="flex justify-between items-center text-[10px] font-bold">
-                <span className="text-gray-500 flex items-center gap-1"><Monitor className="h-3.5 w-3.5 text-gray-400" /> Tab switches</span>
-                <span className={tabSwitches > 0 ? 'text-red-650' : 'text-gray-650'}>{tabSwitches} / 3 Allowed</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    tabSwitches >= 2 ? 'bg-red-500' : 'bg-primary'
-                  }`}
-                  style={{ width: `${(tabSwitches / 3) * 100}%` }}
-                ></div>
-              </div>
-
-              {/* Noise spikes counter */}
-              <div className="flex justify-between items-center text-[10px] font-bold">
-                <span className="text-gray-500 flex items-center gap-1"><Mic className="h-3.5 w-3.5 text-gray-400" /> Microphone spikes</span>
-                <span className={noiseSpikes > 5 ? 'text-amber-600' : 'text-gray-650'}>{noiseSpikes} Detected</span>
-              </div>
+            {/* Tab Switches warning bar */}
+            <div className="flex justify-between items-center text-[10px] font-bold">
+              <span className="text-gray-500 flex items-center gap-1"><Monitor className="h-3.5 w-3.5 text-gray-400" /> Tab switches</span>
+              <span className={tabSwitches > 0 ? 'text-red-650' : 'text-gray-650'}>{tabSwitches} / 3 Allowed</span>
+            </div>
+            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-300 ${
+                  tabSwitches >= 2 ? 'bg-red-500' : 'bg-primary'
+                }`}
+                style={{ width: `${(tabSwitches / 3) * 100}%` }}
+              ></div>
             </div>
 
-            {/* Webcam Live Feed Feed Container */}
-            <div className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-900 aspect-video flex items-center justify-center">
-              <video 
-                ref={videoCallbackRef} 
-                autoPlay 
-                playsInline 
-                muted 
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-red-500/80 rounded text-[8px] font-bold text-white flex items-center gap-1 uppercase tracking-wider">
-                <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping"></span>
-                Rec Preview
-              </div>
+            {/* Noise spikes counter */}
+            <div className="flex justify-between items-center text-[10px] font-bold">
+              <span className="text-gray-500 flex items-center gap-1"><Mic className="h-3.5 w-3.5 text-gray-400" /> Microphone spikes</span>
+              <span className={noiseSpikes > 5 ? 'text-amber-600' : 'text-gray-650'}>{noiseSpikes} Detected</span>
+            </div>
+          </div>
+
+          {/* Webcam Live Feed Container */}
+          <div className="relative rounded-xl border border-gray-150 overflow-hidden bg-gray-900 aspect-video flex items-center justify-center lg:w-full max-lg:h-full max-lg:w-full max-lg:border-none">
+            <video 
+              ref={videoCallbackRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute top-1.5 left-1.5 px-1 py-0.5 bg-red-500/80 rounded-[3px] text-[7px] font-bold text-white flex items-center gap-0.5 uppercase tracking-wider scale-90">
+              <span className="h-1 w-1 rounded-full bg-white animate-ping"></span>
+              Rec
             </div>
           </div>
         </div>
+
       </main>
 
       {/* Renders Fullscreen exit lock screen */}

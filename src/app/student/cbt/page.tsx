@@ -160,8 +160,19 @@ export default function StudentCBTPage() {
                   const submission = submissions.find(s => s.exam_id === exam.id);
                   const isTaken = submission !== undefined;
 
+                  const cardBorderClass = isTaken 
+                    ? submission.status === 'released'
+                      ? 'border-emerald-200 bg-emerald-50/10 hover:border-emerald-300'
+                      : submission.status === 'withheld'
+                        ? 'border-rose-200 bg-rose-50/10 hover:border-rose-300'
+                        : 'border-amber-200 bg-amber-50/10 hover:border-amber-300'
+                    : 'border-gray-200 bg-white hover:border-primary/30';
+
                   return (
-                    <div key={exam.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
+                    <div 
+                      key={exam.id} 
+                      className={`border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:shadow-md transition-all duration-300 ${cardBorderClass}`}
+                    >
                       <div className="space-y-2">
                         <div className="flex justify-between items-start gap-2">
                           <span className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
@@ -172,23 +183,23 @@ export default function StudentCBTPage() {
                           {/* Status Badge */}
                           {isTaken ? (
                             submission.status === 'released' ? (
-                              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                              <span className="px-2.5 py-0.5 bg-emerald-500 text-white rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-xs">
                                 <CheckCircle2 className="h-3 w-3" />
                                 Score: {submission.score}/{submission.total_questions}
                               </span>
                             ) : submission.status === 'withheld' ? (
-                              <span className="px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                              <span className="px-2.5 py-0.5 bg-rose-500 text-white rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-xs">
                                 <AlertTriangle className="h-3 w-3" />
                                 Withheld
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 bg-amber-50 text-amber-850 border border-amber-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                              <span className="px-2.5 py-0.5 bg-amber-500 text-white rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-xs">
                                 <Clock className="h-3 w-3" />
                                 Submitted
                               </span>
                             )
                           ) : (
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider">
+                            <span className="px-2.5 py-0.5 bg-blue-600 text-white rounded-full text-[9px] font-extrabold uppercase tracking-wider shadow-xs">
                               Unattempted
                             </span>
                           )}
