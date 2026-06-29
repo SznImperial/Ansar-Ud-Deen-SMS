@@ -10,6 +10,7 @@ create table public.profiles (
     email text not null unique,
     role text not null check (role in ('admin', 'teacher', 'student', 'parent')),
     password_changed boolean not null default false,
+    temp_password text,
     created_at timestamptz default timezone('utc'::text, now()) not null
 );
 
@@ -443,5 +444,25 @@ on public.student_subjects for select using (
     )
   )
 );
+
+-- 15. PASSWORD_RESET_REQUESTS Table
+create table public.password_reset_requests (
+    id uuid default gen_random_uuid() primary key,
+    email text not null,
+    full_name text not null,
+    status text not null check (status in ('pending', 'resolved')),
+    temp_password text,
+    created_at timestamptz default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
+alter table public.password_reset_requests enable row level security;
+
+-- Policies
+create policy "Anyone can submit a password reset request" on public.password_reset_requests
+  for insert with check (true);
+
+create policy "Admins have full access to password_reset_requests" on public.password_reset_requests
+  for all using (public.is_admin());
 
 

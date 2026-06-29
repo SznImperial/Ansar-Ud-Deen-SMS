@@ -4,16 +4,23 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { dbService } from '@/lib/db';
 import * as T from '@/lib/types';
-import { Plus, Search, UserCheck, GraduationCap, Users, UserPlus, Mail, Phone, Calendar, AlertTriangle } from 'lucide-react';
+import { Plus, Search, UserCheck, GraduationCap, Users, UserPlus, Mail, Phone, Calendar, AlertTriangle, Key, Copy } from 'lucide-react';
 
 export default function UsersManagementPage() {
-  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'promotions'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'teachers' | 'promotions' | 'resets'>('students');
   const [students, setStudents] = useState<T.Student[]>([]);
   const [teachers, setTeachers] = useState<T.Teacher[]>([]);
   const [profiles, setProfiles] = useState<T.Profile[]>([]);
   const [classes, setClasses] = useState<T.Class[]>([]);
   const [subjects, setSubjects] = useState<T.Subject[]>([]);
+  const [resetRequests, setResetRequests] = useState<T.PasswordResetRequest[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Reissue success modal states
+  const [showReissueModal, setShowReissueModal] = useState(false);
+  const [generatedTempPassword, setGeneratedTempPassword] = useState('');
+  const [reissueTargetEmail, setReissueTargetEmail] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Search queries
   const [studentSearch, setStudentSearch] = useState('');
@@ -81,18 +88,20 @@ export default function UsersManagementPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [stdList, tchrList, profList, clsList, subList] = await Promise.all([
+      const [stdList, tchrList, profList, clsList, subList, resetList] = await Promise.all([
         dbService.getStudents(),
         dbService.getTeachers(),
         dbService.getProfiles(),
         dbService.getClasses(),
-        dbService.getSubjects()
+        dbService.getSubjects(),
+        dbService.getPasswordResetRequests()
       ]);
       setStudents(stdList);
       setTeachers(tchrList);
       setProfiles(profList);
       setClasses(clsList);
       setSubjects(subList);
+      setResetRequests(resetList);
       if (clsList.length > 0) {
         if (!sClassId) setSClassId(clsList[0].id);
         if (!promoSourceClassId) setPromoSourceClassId(clsList[0].id);
@@ -343,6 +352,26 @@ export default function UsersManagementPage() {
     }
   };
 
+  const handleReissuePassword = async (request: T.PasswordResetRequest) => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let randCode = '';
+    for (let i = 0; i < 6; i++) {
+      randCode += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const tempPass = `AUD-TEMP-${randCode}`;
+
+    try {
+      await dbService.resolvePasswordResetRequest(request.id, tempPass);
+      setGeneratedTempPassword(tempPass);
+      setReissueTargetEmail(request.email);
+      setCopySuccess(false);
+      setShowReissueModal(true);
+      loadData();
+    } catch (err: any) {
+      alert('Failed to reissue password: ' + err.message);
+    }
+  };
+
   // Filter students
   const filteredStudents = students.filter(s => {
     const term = studentSearch.toLowerCase();
@@ -375,7 +404,7 @@ export default function UsersManagementPage() {
             <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Records & Staff Registry</h1>
             <p className="text-sm text-gray-500 mt-1">Manage registration cards, parent information, and assigned staff qualifications.</p>
           </div>
-          {activeTab !== 'promotions' && (
+          {activeTab !== 'promotions' && activeTab !== 'resets' && (
             <button 
               onClick={() => {
                 if (activeTab === 'students') {
@@ -445,6 +474,22 @@ export default function UsersManagementPage() {
           >
             <UserCheck className="h-4 w-4" />
             <span>Auto-Promotions</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('resets')}
+            className={`px-6 py-3 border-b-2 font-bold text-sm transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'resets' 
+                ? 'border-primary text-primary' 
+                : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            <Key className="h-4 w-4" />
+            <span>Password Resets</span>
+            {resetRequests.filter(r => r.status === 'pending').length > 0 && (
+              <span className="ml-1 px-2 py-0.5 text-[9px] font-extrabold bg-red-100 text-red-700 rounded-full animate-pulse border border-red-200">
+                {resetRequests.filter(r => r.status === 'pending').length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -735,6 +780,73 @@ export default function UsersManagementPage() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {activeTab === 'resets' && (
+          <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-gray-150 flex justify-between items-center bg-gray-50/50">
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-gray-500">Showing {resetRequests.length} reset requests</span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto text-xs font-semibold">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-100/75 border-b border-gray-200 font-bold text-gray-700">
+                    <th className="p-4">User Details</th>
+                    <th className="p-4">Requested Email</th>
+                    <th className="p-4">Request Date</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {resetRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-gray-500">No password reset requests filed.</td>
+                    </tr>
+                  ) : (
+                    resetRequests.map((req) => (
+                      <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="p-4">
+                          <div className="font-bold text-gray-900">{req.full_name}</div>
+                        </td>
+                        <td className="p-4 font-semibold text-gray-700">{req.email}</td>
+                        <td className="p-4 text-gray-500">
+                          {new Date(req.created_at).toLocaleString()}
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-full font-bold uppercase text-[9px] border ${
+                            req.status === 'pending'
+                              ? 'bg-amber-50 text-amber-800 border-amber-100 animate-pulse'
+                              : 'bg-emerald-50 text-emerald-800 border-emerald-100'
+                          }`}>
+                            {req.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right">
+                          {req.status === 'pending' ? (
+                            <button
+                              onClick={() => handleReissuePassword(req)}
+                              className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm ml-auto text-xs"
+                            >
+                              <Key className="h-3.5 w-3.5" />
+                              Reissue Password
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 font-medium italic">
+                              Resolved: <code className="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-gray-700 select-all font-bold">{req.temp_password}</code>
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
@@ -1201,6 +1313,79 @@ export default function UsersManagementPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {showReissueModal && (
+        <div className="fixed inset-0 bg-black/55 z-55 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden border border-gray-200 shadow-2xl animate-in fade-in zoom-in-95 duration-150 text-xs font-semibold">
+            {/* Header */}
+            <div className="p-5 border-b border-gray-150 bg-gray-50 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200">
+                  <Key className="h-4 w-4" />
+                </div>
+                <h3 className="text-sm font-extrabold text-gray-900">Password Reissued</h3>
+              </div>
+              <button
+                onClick={() => setShowReissueModal(false)}
+                className="text-gray-400 hover:text-gray-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4 text-center">
+              <p className="text-gray-500 font-semibold leading-relaxed">
+                A temporary password has been successfully reissued for:
+                <strong className="block text-gray-900 mt-0.5">{reissueTargetEmail}</strong>
+              </p>
+
+              <div className="relative bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between font-mono text-sm tracking-wide">
+                <span className="font-extrabold text-gray-900 select-all">{generatedTempPassword}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedTempPassword);
+                    setCopySuccess(true);
+                    setTimeout(() => setCopySuccess(false), 2000);
+                  }}
+                  className={`p-2 rounded-lg border transition-all ${
+                    copySuccess
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                  }`}
+                  title="Copy password to clipboard"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+              </div>
+
+              {copySuccess && (
+                <span className="text-[10px] text-emerald-600 font-extrabold">
+                  ✓ Copied to clipboard!
+                </span>
+              )}
+
+              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg text-amber-800 text-[10px] text-left leading-normal flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 animate-pulse" />
+                <span>
+                  Share this temporary password with the user. They will be forced to change it on their first login.
+                </span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-gray-150 bg-gray-50 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowReissueModal(false)}
+                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                Close & Refresh
+              </button>
+            </div>
           </div>
         </div>
       )}

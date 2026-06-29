@@ -8,6 +8,16 @@ export interface Profile {
   email: string;
   role: UserRole;
   password_changed: boolean;
+  temp_password?: string;
+  created_at: string;
+}
+
+export interface PasswordResetRequest {
+  id: string;
+  email: string;
+  full_name: string;
+  status: 'pending' | 'resolved';
+  temp_password?: string;
   created_at: string;
 }
 

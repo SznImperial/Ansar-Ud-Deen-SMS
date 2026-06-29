@@ -216,6 +216,9 @@ class MockDB {
   saveCbtQuestions = (d: T.CBTQuestion[]) => this.save('cbt_questions', d);
   getCbtSubmissions = () => this.get('cbt_submissions', [] as T.CBTSubmission[]);
   saveCbtSubmissions = (d: T.CBTSubmission[]) => this.save('cbt_submissions', d);
+
+  getPasswordResetRequests = () => this.get('password_reset_requests', [] as T.PasswordResetRequest[]);
+  savePasswordResetRequests = (d: T.PasswordResetRequest[]) => this.save('password_reset_requests', d);
 }
 
 export const mockDB = new MockDB();
@@ -1304,6 +1307,111 @@ export const dbService = {
         return s;
       });
       mockDB.saveCbtSubmissions(updated);
+    }
+  },
+
+  async submitPasswordResetRequest(email: string, fullName: string): Promise<T.PasswordResetRequest> {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase!
+        .from('password_reset_requests')
+        .insert({
+          email: email.trim().toLowerCase(),
+          full_name: fullName,
+          status: 'pending'
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } else {
+      const newRequest: T.PasswordResetRequest = {
+        id: `req-${Date.now()}`,
+        email: email.trim().toLowerCase(),
+        full_name: fullName,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      };
+      const requests = mockDB.getPasswordResetRequests();
+      requests.push(newRequest);
+      mockDB.savePasswordResetRequests(requests);
+      return newRequest;
+    }
+  },
+
+  async getPasswordResetRequests(): Promise<T.PasswordResetRequest[]> {
+    if (isSupabaseConfigured) {
+      const { data, error } = await supabase!
+        .from('password_reset_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    } else {
+      const reqs = mockDB.getPasswordResetRequests();
+      return reqs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+  },
+
+  async resolvePasswordResetRequest(requestId: string, tempPassword: string): Promise<void> {
+    let email = '';
+    if (isSupabaseConfigured) {
+      const { data: req, error: reqError } = await supabase!
+        .from('password_reset_requests')
+        .select('email')
+        .eq('id', requestId)
+        .single();
+      if (reqError) throw reqError;
+      email = req.email;
+
+      const { error: updateReqError } = await supabase!
+        .from('password_reset_requests')
+        .update({ status: 'resolved', temp_password: tempPassword })
+        .eq('id', requestId);
+      if (updateReqError) throw updateReqError;
+
+      const { error: updateProfileError } = await supabase!
+        .from('profiles')
+        .update({ password_changed: false, temp_password: tempPassword })
+        .eq('email', email);
+      if (updateProfileError) throw updateProfileError;
+    } else {
+      const requests = mockDB.getPasswordResetRequests();
+      const reqIdx = requests.findIndex(r => r.id === requestId);
+      if (reqIdx !== -1) {
+        requests[reqIdx].status = 'resolved';
+        requests[reqIdx].temp_password = tempPassword;
+        email = requests[reqIdx].email;
+        mockDB.savePasswordResetRequests(requests);
+      }
+
+      const profiles = mockDB.getProfiles();
+      const profIdx = profiles.findIndex(p => p.email.toLowerCase() === email.toLowerCase());
+      if (profIdx !== -1) {
+        profiles[profIdx].password_changed = false;
+        profiles[profIdx].temp_password = tempPassword;
+        mockDB.saveProfiles(profiles);
+      }
+    }
+  },
+
+  async clearTempPassword(profileId: string): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase!
+        .from('profiles')
+        .update({ temp_password: null })
+        .eq('id', profileId);
+      if (error) throw error;
+    } else {
+      const profiles = mockDB.getProfiles();
+      const idx = profiles.findIndex(p => p.id === profileId);
+      if (idx !== -1) {
+        const updatedProfiles = [...profiles];
+        updatedProfiles[idx] = {
+          ...updatedProfiles[idx],
+          temp_password: undefined
+        };
+        mockDB.saveProfiles(updatedProfiles);
+      }
     }
   }
 };

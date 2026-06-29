@@ -81,6 +81,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password = 'password123'): Promise<boolean> => {
     setLoading(true);
     try {
+      const profile = await dbService.login(email);
+      if (!profile) return false;
+
+      // If user has a temporary password reissued by Admin, validate and enforce it
+      if (profile.temp_password) {
+        if (password !== profile.temp_password) {
+          console.log('Temporary password mismatch');
+          return false;
+        }
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('aud_session_user', JSON.stringify(profile));
+        }
+        setUser(profile);
+        return true;
+      }
+
       if (isSupabaseConfigured && supabase) {
         // Authenticate with Supabase Auth in the background using the provided password
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -93,20 +109,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return false;
         }
 
-        const profile = await dbService.login(email.trim());
-        if (profile) {
-          setUser(profile);
+        const profileData = await dbService.login(email.trim());
+        if (profileData) {
+          setUser(profileData);
           return true;
         }
         return false;
       } else {
-        const profile = await dbService.login(email);
-        if (profile) {
-          localStorage.setItem('aud_session_user', JSON.stringify(profile));
-          setUser(profile);
-          return true;
-        }
-        return false;
+        localStorage.setItem('aud_session_user', JSON.stringify(profile));
+        setUser(profile);
+        return true;
       }
     } catch (e) {
       console.error(e);
@@ -187,20 +199,22 @@ function FirstTimePasswordChange() {
     setLoading(true);
     try {
       if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase.auth.updateUser({
-          password: newPassword
-        });
-
-        if (error) {
-          setError(error.message);
-        } else {
-          await dbService.markPasswordChanged(user.id);
-          await refreshUserSession();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { error } = await supabase.auth.updateUser({
+            password: newPassword
+          });
+          if (error) {
+            setError(error.message);
+            setLoading(false);
+            return;
+          }
         }
-      } else {
-        await dbService.markPasswordChanged(user.id);
-        await refreshUserSession();
       }
+
+      await dbService.markPasswordChanged(user.id);
+      await dbService.clearTempPassword(user.id);
+      await refreshUserSession();
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
