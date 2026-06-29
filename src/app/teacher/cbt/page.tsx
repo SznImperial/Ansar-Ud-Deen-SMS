@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { dbService } from '@/lib/db';
 import { useAuth } from '@/lib/authContext';
 import * as T from '@/lib/types';
-import { Plus, Trash2, Edit3, ClipboardList, BookOpen, Clock, Play, CheckCircle, AlertCircle, Eye, ShieldAlert, Award } from 'lucide-react';
+import { Plus, Trash2, Edit3, ClipboardList, BookOpen, Clock, Play, CheckCircle, AlertCircle, Eye, ShieldAlert, Award, AlertTriangle } from 'lucide-react';
 
 interface QuestionDraft {
   question_text: string;
@@ -315,12 +315,17 @@ export default function TeacherCBTPage() {
                                 ({sub.total_questions > 0 ? ((sub.score / sub.total_questions) * 100).toFixed(0) : 0}%)
                               </span>
                             </td>
-                            <td className="p-4 text-center">
+                             <td className="p-4 text-center">
                               <div className="flex flex-col items-center gap-1">
                                 {sub.proctor_violated ? (
-                                  <span className="px-2 py-0.5 bg-red-50 text-red-800 border border-red-100 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                  <span className="px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-md font-bold text-[9px] flex items-center gap-1">
                                     <ShieldAlert className="h-3 w-3" />
                                     Violated Lockout
+                                  </span>
+                                ) : sub.tab_switch_count > 0 || sub.noise_spike_count > 5 ? (
+                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md font-bold text-[9px] flex items-center gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Integrity Warning
                                   </span>
                                 ) : (
                                   <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-md font-bold text-[9px] flex items-center gap-1">
@@ -336,6 +341,10 @@ export default function TeacherCBTPage() {
                               {sub.status === 'released' ? (
                                 <span className="px-2.5 py-0.8 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg font-bold text-[9px]">
                                   Released
+                                </span>
+                              ) : sub.status === 'withheld' ? (
+                                <span className="px-2.5 py-0.8 bg-rose-50 text-rose-800 border border-rose-100 rounded-lg font-bold text-[9px]">
+                                  Withheld
                                 </span>
                               ) : (
                                 <span className="px-2.5 py-0.8 bg-amber-50 text-amber-800 border border-amber-100 rounded-lg font-bold text-[9px]">

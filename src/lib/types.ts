@@ -162,7 +162,7 @@ export interface CBTSubmission {
   tab_switch_count: number;
   noise_spike_count: number;
   proctor_violated: boolean;
-  status: 'submitted' | 'released';
+  status: 'submitted' | 'released' | 'withheld';
   submitted_at: string;
 }
 

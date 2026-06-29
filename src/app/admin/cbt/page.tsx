@@ -93,10 +93,36 @@ export default function AdminCBTPage() {
     setShowSubmissionsModal(true);
   };
 
-  const handleReleaseResults = async (examId: string) => {
+  const handleReleaseAllResults = async (examId: string) => {
     try {
       await dbService.releaseCBTResults(examId);
-      setShowSubmissionsModal(false);
+      setSelectedExamSubmissions(prev =>
+        prev.map(s => ({ ...s, status: 'released' as const }))
+      );
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleWithholdAllResults = async (examId: string) => {
+    try {
+      await dbService.withholdCBTResults(examId);
+      setSelectedExamSubmissions(prev =>
+        prev.map(s => ({ ...s, status: 'withheld' as const }))
+      );
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateSubmissionStatus = async (subId: string, status: 'submitted' | 'released' | 'withheld') => {
+    try {
+      await dbService.updateCBTSubmissionStatus(subId, status);
+      setSelectedExamSubmissions(prev =>
+        prev.map(s => s.id === subId ? { ...s, status } : s)
+      );
       loadData();
     } catch (err) {
       console.error(err);
@@ -431,15 +457,51 @@ export default function AdminCBTPage() {
                               </div>
                             </td>
                             <td className="p-3 text-center">
-                              {sub.status === 'released' ? (
-                                <span className="px-2.5 py-0.8 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg font-bold text-[9px]">
-                                  Released
-                                </span>
-                              ) : (
-                                <span className="px-2.5 py-0.8 bg-amber-50 text-amber-800 border border-amber-100 rounded-lg font-bold text-[9px]">
-                                  Pending
-                                </span>
-                              )}
+                              <div className="flex flex-col items-center gap-1 mt-0.5">
+                                {sub.status === 'released' ? (
+                                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg font-bold text-[9px]">
+                                    Released
+                                  </span>
+                                ) : sub.status === 'withheld' ? (
+                                  <span className="px-2.5 py-0.5 bg-rose-50 text-rose-800 border border-rose-100 rounded-lg font-bold text-[9px]">
+                                    Withheld
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-100 rounded-lg font-bold text-[9px]">
+                                    Pending
+                                  </span>
+                                )}
+
+                                <div className="flex items-center gap-1 mt-1">
+                                  {sub.status !== 'released' && (
+                                    <button
+                                      onClick={() => handleUpdateSubmissionStatus(sub.id, 'released')}
+                                      className="px-1.5 py-0.5 border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 rounded font-bold text-[8px] cursor-pointer transition-colors"
+                                      title="Release result to student"
+                                    >
+                                      Release
+                                    </button>
+                                  )}
+                                  {sub.status !== 'withheld' && (
+                                    <button
+                                      onClick={() => handleUpdateSubmissionStatus(sub.id, 'withheld')}
+                                      className="px-1.5 py-0.5 border border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-800 rounded font-bold text-[8px] cursor-pointer transition-colors"
+                                      title="Withhold result from student"
+                                    >
+                                      Withhold
+                                    </button>
+                                  )}
+                                  {sub.status !== 'submitted' && (
+                                    <button
+                                      onClick={() => handleUpdateSubmissionStatus(sub.id, 'submitted')}
+                                      className="px-1 py-0.5 border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded font-bold text-[8px] cursor-pointer transition-colors"
+                                      title="Reset back to Pending"
+                                    >
+                                      Reset
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -460,14 +522,23 @@ export default function AdminCBTPage() {
                 >
                   Close
                 </button>
-                {selectedExamSubmissions.length > 0 && selectedExamSubmissions.some(s => s.status !== 'released') && (
-                  <button
-                    onClick={() => handleReleaseResults(selectedExamId!)}
-                    className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
-                  >
-                    <FileCheck className="h-4.5 w-4.5" />
-                    Release Results
-                  </button>
+                {selectedExamSubmissions.length > 0 && (
+                  <>
+                    <button
+                      onClick={() => handleWithholdAllResults(selectedExamId!)}
+                      className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-850 border border-rose-200 rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Withhold All
+                    </button>
+                    <button
+                      onClick={() => handleReleaseAllResults(selectedExamId!)}
+                      className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                    >
+                      <FileCheck className="h-4.5 w-4.5" />
+                      Release All
+                    </button>
+                  </>
                 )}
               </div>
             </div>

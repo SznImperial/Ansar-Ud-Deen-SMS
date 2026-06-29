@@ -1267,6 +1267,44 @@ export const dbService = {
       });
       mockDB.saveCbtSubmissions(updated);
     }
+  },
+
+  async withholdCBTResults(examId: string): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase!
+        .from('cbt_submissions')
+        .update({ status: 'withheld' })
+        .eq('exam_id', examId);
+      if (error) throw error;
+    } else {
+      const subs = mockDB.getCbtSubmissions();
+      const updated = subs.map(s => {
+        if (s.exam_id === examId) {
+          return { ...s, status: 'withheld' as const };
+        }
+        return s;
+      });
+      mockDB.saveCbtSubmissions(updated);
+    }
+  },
+
+  async updateCBTSubmissionStatus(submissionId: string, status: 'submitted' | 'released' | 'withheld'): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase!
+        .from('cbt_submissions')
+        .update({ status })
+        .eq('id', submissionId);
+      if (error) throw error;
+    } else {
+      const subs = mockDB.getCbtSubmissions();
+      const updated = subs.map(s => {
+        if (s.id === submissionId) {
+          return { ...s, status };
+        }
+        return s;
+      });
+      mockDB.saveCbtSubmissions(updated);
+    }
   }
 };
 

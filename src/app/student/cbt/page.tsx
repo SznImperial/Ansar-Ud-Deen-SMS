@@ -6,7 +6,7 @@ import { dbService } from '@/lib/db';
 import { useAuth } from '@/lib/authContext';
 import * as T from '@/lib/types';
 import Link from 'next/link';
-import { ClipboardList, Clock, HelpCircle, AlertCircle, Play, CheckCircle2, Award, ArrowRight } from 'lucide-react';
+import { ClipboardList, Clock, HelpCircle, AlertCircle, Play, CheckCircle2, Award, ArrowRight, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 export default function StudentCBTPage() {
   const { user } = useAuth();
@@ -176,6 +176,11 @@ export default function StudentCBTPage() {
                                 <CheckCircle2 className="h-3 w-3" />
                                 Score: {submission.score}/{submission.total_questions}
                               </span>
+                            ) : submission.status === 'withheld' ? (
+                              <span className="px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                Withheld
+                              </span>
                             ) : (
                               <span className="px-2 py-0.5 bg-amber-50 text-amber-850 border border-amber-100 rounded-full text-[9px] font-extrabold uppercase tracking-wider flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
@@ -200,6 +205,11 @@ export default function StudentCBTPage() {
                             <div className="text-[10px] text-emerald-800 font-extrabold flex items-center gap-1">
                               <Award className="h-4 w-4" />
                               Grade Released ({((submission.score / submission.total_questions) * 100).toFixed(0)}%)
+                            </div>
+                          ) : submission.status === 'withheld' ? (
+                            <div className="text-[10px] text-rose-700 font-extrabold flex items-center gap-1">
+                              <ShieldAlert className="h-4 w-4" />
+                              Result Withheld
                             </div>
                           ) : (
                             <div className="text-[10px] text-amber-700 font-extrabold">
