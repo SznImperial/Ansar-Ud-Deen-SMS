@@ -37,6 +37,7 @@ export default function TeacherCBTPage() {
   const [questions, setQuestions] = useState<QuestionDraft[]>([
     { question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A' }
   ]);
+  const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Results View State
@@ -84,15 +85,21 @@ export default function TeacherCBTPage() {
 
   // Question handlers
   const handleAddQuestion = () => {
-    setQuestions([
+    const newQs: QuestionDraft[] = [
       ...questions,
       { question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A' }
-    ]);
+    ];
+    setQuestions(newQs);
+    setActiveQuestionIdx(newQs.length - 1);
   };
 
   const handleRemoveQuestion = (idx: number) => {
     if (questions.length <= 1) return;
-    setQuestions(questions.filter((_, i) => i !== idx));
+    const newQs = questions.filter((_, i) => i !== idx);
+    setQuestions(newQs);
+    if (activeQuestionIdx >= newQs.length) {
+      setActiveQuestionIdx(newQs.length - 1);
+    }
   };
 
   const handleQuestionChange = (idx: number, field: keyof QuestionDraft, val: string) => {
@@ -129,6 +136,7 @@ export default function TeacherCBTPage() {
       setExamTitle('');
       setDuration(30);
       setQuestions([{ question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A' }]);
+      setActiveQuestionIdx(0);
       setShowCreateModal(false);
       loadData();
     } catch (err: any) {
@@ -166,6 +174,10 @@ export default function TeacherCBTPage() {
       default:
         return 'bg-gray-50 text-gray-600 border-gray-150';
     }
+  };
+
+  const isQComplete = (q: QuestionDraft) => {
+    return !!(q.question_text.trim() && q.option_a.trim() && q.option_b.trim() && q.option_c.trim() && q.option_d.trim());
   };
 
   return (
@@ -512,112 +524,191 @@ export default function TeacherCBTPage() {
 
               {/* Questions Area */}
               <div className="space-y-4 pt-2">
-                <div className="flex justify-between items-center border-b border-gray-150 pb-2">
-                  <span className="text-[10px] uppercase text-gray-400 font-extrabold tracking-wider">Exam Questions List ({questions.length})</span>
-                  <button
-                    type="button"
-                    onClick={handleAddQuestion}
-                    className="px-2.5 py-1 border border-primary text-primary hover:bg-primary hover:text-white rounded-md font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add Question
-                  </button>
+                <div className="flex flex-col gap-2 border-b border-gray-150 pb-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] uppercase text-gray-400 font-extrabold tracking-wider">Exam Questions List ({questions.length})</span>
+                    <button
+                      type="button"
+                      onClick={handleAddQuestion}
+                      className="px-2.5 py-1 border border-primary text-primary hover:bg-primary hover:text-white rounded-md font-bold flex items-center gap-1 cursor-pointer transition-colors text-[10px]"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add Question
+                    </button>
+                  </div>
+
+                  {/* Horizontal Scroll Question Pagination */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto py-1.5 px-0.5 scrollbar-thin scrollbar-thumb-emerald-600 scrollbar-track-transparent">
+                    {questions.map((q, i) => {
+                      const complete = isQComplete(q);
+                      const isActive = activeQuestionIdx === i;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setActiveQuestionIdx(i)}
+                          className={`h-8 min-w-[38px] px-2.5 rounded-xl font-extrabold border transition-all text-[11px] flex items-center justify-center cursor-pointer shrink-0 relative ${
+                            isActive
+                              ? 'bg-primary border-primary text-white shadow-xs scale-102'
+                              : complete
+                              ? 'bg-emerald-50/65 border-emerald-200 text-emerald-800 hover:bg-emerald-50'
+                              : 'bg-white border-gray-250 text-gray-650 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span>Q{i + 1}</span>
+                          {!complete && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full border border-white"></span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="space-y-5">
-                  {questions.map((q, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 space-y-3 relative">
-                      <div className="flex justify-between items-center">
-                        <span className="font-extrabold text-primary">Question {idx + 1}</span>
-                        {questions.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveQuestion(idx)}
-                            className="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 cursor-pointer"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Remove
-                          </button>
-                        )}
-                      </div>
+                {/* Active Question Editor */}
+                {questions[activeQuestionIdx] && (
+                  <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50/45 space-y-4 relative">
+                    <div className="flex justify-between items-center">
+                      <span className="font-extrabold text-primary text-xs uppercase tracking-wider">
+                        Question {activeQuestionIdx + 1} of {questions.length}
+                      </span>
+                      {questions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveQuestion(activeQuestionIdx)}
+                          className="text-red-500 hover:text-red-700 font-extrabold flex items-center gap-1 cursor-pointer text-[10px]"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete Q{activeQuestionIdx + 1}
+                        </button>
+                      )}
+                    </div>
 
-                      <div>
-                        <label className="block text-[9px] uppercase text-gray-400 font-extrabold mb-1">Question Description</label>
-                        <textarea
-                          rows={2}
+                    <div className="space-y-1">
+                      <label className="block text-[9px] uppercase text-gray-400 font-extrabold tracking-wider">Question Description</label>
+                      <textarea
+                        rows={2}
+                        required
+                        placeholder="Type your question text here..."
+                        className="w-full px-3 py-2 border border-gray-250 rounded-xl bg-white text-gray-950 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                        value={questions[activeQuestionIdx].question_text}
+                        onChange={e => handleQuestionChange(activeQuestionIdx, 'question_text', e.target.value)}
+                      />
+                    </div>
+
+                    {/* Options Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase text-gray-400 font-extrabold tracking-wider">Option A</label>
+                        <input
+                          type="text"
                           required
-                          placeholder="Type your question text here..."
-                          className="w-full px-3 py-2 border rounded-lg bg-white text-gray-950 font-bold"
-                          value={q.question_text}
-                          onChange={e => handleQuestionChange(idx, 'question_text', e.target.value)}
+                          placeholder="Option A..."
+                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          value={questions[activeQuestionIdx].option_a}
+                          onChange={e => handleQuestionChange(activeQuestionIdx, 'option_a', e.target.value)}
                         />
                       </div>
-
-                      {/* Options Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[9px] uppercase text-gray-400 font-extrabold mb-1">Option A</label>
-                          <input
-                            type="text"
-                            required
-                            className="w-full px-3 py-1.5 border rounded-lg bg-white text-gray-950 font-bold"
-                            value={q.option_a}
-                            onChange={e => handleQuestionChange(idx, 'option_a', e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] uppercase text-gray-400 font-extrabold mb-1">Option B</label>
-                          <input
-                            type="text"
-                            required
-                            className="w-full px-3 py-1.5 border rounded-lg bg-white text-gray-955 font-bold"
-                            value={q.option_b}
-                            onChange={e => handleQuestionChange(idx, 'option_b', e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] uppercase text-gray-400 font-extrabold mb-1">Option C</label>
-                          <input
-                            type="text"
-                            required
-                            className="w-full px-3 py-1.5 border rounded-lg bg-white text-gray-955 font-bold"
-                            value={q.option_c}
-                            onChange={e => handleQuestionChange(idx, 'option_c', e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] uppercase text-gray-400 font-extrabold mb-1">Option D</label>
-                          <input
-                            type="text"
-                            required
-                            className="w-full px-3 py-1.5 border rounded-lg bg-white text-gray-955 font-bold"
-                            value={q.option_d}
-                            onChange={e => handleQuestionChange(idx, 'option_d', e.target.value)}
-                          />
-                        </div>
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase text-gray-400 font-extrabold tracking-wider">Option B</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Option B..."
+                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          value={questions[activeQuestionIdx].option_b}
+                          onChange={e => handleQuestionChange(activeQuestionIdx, 'option_b', e.target.value)}
+                        />
                       </div>
-
-                      {/* Correct Option Radio */}
-                      <div className="flex items-center gap-4 pt-1">
-                        <span className="text-[9px] uppercase text-gray-400 font-extrabold">Correct Option:</span>
-                        <div className="flex items-center gap-3">
-                          {['A', 'B', 'C', 'D'].map(opt => (
-                            <label key={opt} className="flex items-center gap-1 cursor-pointer font-bold">
-                              <input
-                                type="radio"
-                                name={`correct-${idx}`}
-                                checked={q.correct_option === opt}
-                                onChange={() => handleQuestionChange(idx, 'correct_option', opt)}
-                                className="h-3.5 w-3.5 text-primary"
-                              />
-                              <span>Option {opt}</span>
-                            </label>
-                          ))}
-                        </div>
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase text-gray-400 font-extrabold tracking-wider">Option C</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Option C..."
+                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          value={questions[activeQuestionIdx].option_c}
+                          onChange={e => handleQuestionChange(activeQuestionIdx, 'option_c', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[9px] uppercase text-gray-400 font-extrabold tracking-wider">Option D</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Option D..."
+                          className="w-full px-3 py-1.5 border border-gray-250 rounded-xl bg-white text-gray-955 font-bold focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-xs"
+                          value={questions[activeQuestionIdx].option_d}
+                          onChange={e => handleQuestionChange(activeQuestionIdx, 'option_d', e.target.value)}
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Correct Option Radio Button Group styled as cards */}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="block text-[9px] uppercase text-gray-400 font-extrabold tracking-wider">Select Correct Answer Option</span>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-extrabold">
+                        {['A', 'B', 'C', 'D'].map(opt => {
+                          const getOptVal = () => {
+                            if (opt === 'A') return questions[activeQuestionIdx].option_a;
+                            if (opt === 'B') return questions[activeQuestionIdx].option_b;
+                            if (opt === 'C') return questions[activeQuestionIdx].option_c;
+                            return questions[activeQuestionIdx].option_d;
+                          };
+                          const choiceVal = getOptVal();
+                          const isSelected = questions[activeQuestionIdx].correct_option === opt;
+
+                          return (
+                            <label
+                              key={opt}
+                              onClick={() => handleQuestionChange(activeQuestionIdx, 'correct_option', opt as any)}
+                              className={`flex flex-col p-2.5 border rounded-xl cursor-pointer text-center transition-all ${
+                                isSelected
+                                  ? 'bg-emerald-50 text-emerald-800 border-primary shadow-xs ring-1 ring-primary'
+                                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              <span className="font-extrabold text-xs block">Option {opt}</span>
+                              <span className="text-[9px] text-gray-400 font-bold block truncate max-w-full mt-0.5">
+                                {choiceVal ? choiceVal : `(empty)`}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Stepper Footer Action Buttons */}
+                    <div className="flex justify-between items-center border-t border-gray-200/60 pt-3 text-xs font-bold">
+                      <button
+                        type="button"
+                        disabled={activeQuestionIdx === 0}
+                        onClick={() => setActiveQuestionIdx(prev => prev - 1)}
+                        className="px-3.5 py-2 border border-gray-250 hover:bg-gray-50 disabled:opacity-45 rounded-lg flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed font-extrabold transition-colors text-gray-700"
+                      >
+                        ← Previous
+                      </button>
+
+                      {activeQuestionIdx < questions.length - 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => setActiveQuestionIdx(prev => prev + 1)}
+                          className="px-3.5 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg flex items-center gap-1.5 cursor-pointer font-extrabold transition-colors"
+                        >
+                          Next Question →
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleAddQuestion}
+                          className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100/80 text-primary border border-primary/20 rounded-lg flex items-center gap-1.5 cursor-pointer font-extrabold transition-colors"
+                        >
+                          + Append Question
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -626,7 +717,7 @@ export default function TeacherCBTPage() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 border rounded-lg font-bold text-gray-700 cursor-pointer"
+                className="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-lg font-bold text-gray-700 cursor-pointer shadow-xs"
               >
                 Cancel
               </button>
