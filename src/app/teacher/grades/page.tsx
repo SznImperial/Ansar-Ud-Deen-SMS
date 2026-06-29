@@ -226,8 +226,9 @@ export default function GradeEntryPage() {
             </div>
 
             {/* Grades Ledger Sheet */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
-              <div className="overflow-x-auto text-xs">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-100/75 border-b border-gray-200 font-bold text-gray-700">
@@ -279,7 +280,7 @@ export default function GradeEntryPage() {
                             </td>
                             <td className="p-4 font-extrabold text-sm text-gray-900">{total}</td>
                             <td className="p-4">
-                              <span className={`px-2.5 py-1 text-[11px] font-extrabold uppercase rounded-full ${color}`}>
+                              <span className={`px-2.5 py-1 text-[11px] font-extrabold uppercase border rounded-full ${color}`}>
                                 {letter}
                               </span>
                             </td>
@@ -315,6 +316,99 @@ export default function GradeEntryPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden block space-y-4 p-4 bg-gray-50/50">
+                {students.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500 bg-white border rounded-2xl">No students registered in this class.</div>
+                ) : (
+                  gradeRows.map(row => {
+                    const student = students.find(s => s.id === row.studentId)!;
+                    if (!student) return null;
+                    const { total, letter, color } = calculateTotalAndGrade(row.caScore, row.examScore);
+
+                    return (
+                      <div key={student.id} className="bg-white border border-gray-250 rounded-2xl p-4 space-y-3.5 shadow-xs premium-card-hover">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-extrabold text-gray-955 text-xs leading-tight font-sans">{student.full_name}</h4>
+                            <p className="text-[9px] text-gray-400 font-mono mt-0.5">Admission: {student.admission_no}</p>
+                          </div>
+                        </div>
+
+                        {/* Dual Score Inputs */}
+                        <div className="grid grid-cols-2 gap-3 text-[11px] font-semibold text-gray-505">
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-gray-400 font-bold block">CA Score (Max 40)</label>
+                            <input
+                              type="number"
+                              required
+                              max={40}
+                              min={0}
+                              className="w-full px-3 py-1.8 border border-gray-300 rounded-lg text-center font-extrabold focus:outline-none focus:ring-1 focus:ring-primary text-gray-905 bg-white"
+                              value={row.caScore}
+                              onChange={e => handleScoreChange(student.id, 'caScore', e.target.value)}
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[9px] text-gray-400 font-bold block">Exam Score (Max 60)</label>
+                            <input
+                              type="number"
+                              required
+                              max={60}
+                              min={0}
+                              className="w-full px-3 py-1.8 border border-gray-300 rounded-lg text-center font-extrabold focus:outline-none focus:ring-1 focus:ring-primary text-gray-905 bg-white"
+                              value={row.examScore}
+                              onChange={e => handleScoreChange(student.id, 'examScore', e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Auto-calculate Row */}
+                        <div className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl border border-gray-150 text-[10px] font-bold">
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <span>Calculated Total:</span>
+                            <span className="text-gray-900 font-extrabold text-xs">{total} / 100</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-500">
+                            <span>Grade Letter:</span>
+                            <span className={`px-2 py-0.5 border rounded-md font-extrabold text-[9px] ${color}`}>{letter}</span>
+                          </div>
+                        </div>
+
+                        {/* Save button block */}
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSaveRow(student.id)}
+                            disabled={row.isSaving}
+                            className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer border text-xs transition-colors ${
+                              row.isSaved 
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-150 hover:bg-emerald-100' 
+                                : 'bg-primary hover:bg-primary-dark text-white border-transparent'
+                            }`}
+                          >
+                            {row.isSaving ? (
+                              <span className="w-4 h-4 border-2 border-white border-b-transparent rounded-full animate-spin"></span>
+                            ) : row.isSaved ? (
+                              <>
+                                <CheckCircle className="h-4 w-4 text-emerald-600" />
+                                <span>Grade Saved Successfully</span>
+                              </>
+                            ) : (
+                              <>
+                                <Save className="h-4 w-4" />
+                                <span>Save Student Grade</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>

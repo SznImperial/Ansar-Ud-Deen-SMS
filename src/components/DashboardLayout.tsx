@@ -147,45 +147,45 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 md:flex-row">
       {/* Mobile Top bar */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between md:hidden">
+      <header className="bg-white border-b border-gray-150 px-4 py-3 flex items-center justify-between md:hidden sticky top-0 z-40 shadow-xs">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-primary" />
-          <span className="font-bold text-sm text-gray-900 uppercase tracking-tight">Ansar-Ud-Deen Portal</span>
+          <GraduationCap className="h-7 w-7 text-primary" />
+          <span className="font-extrabold text-xs text-gray-900 uppercase tracking-wider">Ansar-Ud-Deen Portal</span>
         </div>
         <button 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-          className="text-gray-600 hover:text-gray-900 focus:outline-none"
+          className="text-gray-600 hover:text-gray-950 focus:outline-none p-1 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer"
         >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </header>
 
       {/* Sidebar Navigation */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 flex flex-col justify-between transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-150 flex flex-col justify-between transform transition-transform duration-300 ease-in-out
         md:translate-x-0 md:static md:h-screen shrink-0
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div>
           {/* Header branding */}
-          <div className="p-6 border-b border-gray-200 flex items-center gap-3">
+          <div className="p-6 border-b border-gray-150 flex items-center gap-3">
             <GraduationCap className="h-9 w-9 text-primary shrink-0" />
             <div>
               <h1 className="font-extrabold text-sm text-gray-900 uppercase tracking-tight leading-none">Ansar-Ud-Deen</h1>
-              <p className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase mt-1">Primary & Secondary</p>
+              <p className="text-[10px] text-gray-400 font-extrabold tracking-wider uppercase mt-1">Primary & Secondary</p>
             </div>
           </div>
 
           {/* User profile summary */}
-          <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+          <div className="p-4 border-b border-gray-150 bg-gray-50/50">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-base border border-primary/20 uppercase">
+              <div className="h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-extrabold text-base border border-primary/20 uppercase shadow-xs">
                 {user.full_name.charAt(0)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-gray-900 truncate leading-tight">{user.full_name}</p>
+                <p className="text-xs font-extrabold text-gray-900 truncate leading-tight">{user.full_name}</p>
                 <div className="flex items-center gap-1.5 mt-1">
-                  <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-full uppercase tracking-wider ${getRoleBadge(user.role)}`}>
+                  <span className={`px-2 py-0.5 text-[8px] font-extrabold border rounded-full uppercase tracking-wider ${getRoleBadge(user.role)}`}>
                     {user.role}
                   </span>
                 </div>
@@ -204,21 +204,21 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all
+                    flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 hover:translate-x-0.5 active:scale-[0.98]
                     ${isActive 
-                      ? 'bg-primary text-white shadow-sm' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}
+                      ? 'bg-gradient-to-r from-primary to-accent text-white shadow-xs shadow-primary/25 border-l-2 border-primary' 
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}
                   `}
                 >
-                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500'}`} />
+                  <Icon className={`h-4.5 w-4.5 shrink-0 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                   <span>{link.label}</span>
                   {link.label === 'Notifications' && unreadCount > 0 && (
-                    <span className={`ml-auto text-[11px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white text-primary' : 'bg-red-500 text-white'}`}>
+                    <span className={`ml-auto text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${isActive ? 'bg-white text-primary' : 'bg-red-500 text-white'}`}>
                       {unreadCount}
                     </span>
                   )}
                   {link.label === 'Notice Board' && unreadCount > 0 && (
-                    <span className="ml-auto text-[11px] px-1.5 py-0.2 rounded-full font-bold bg-red-500 text-white">
+                    <span className="ml-auto text-[9px] px-1.5 py-0.2 rounded-full font-extrabold bg-red-500 text-white">
                       {unreadCount}
                     </span>
                   )}

@@ -194,11 +194,13 @@ export default function StudentGradesPage() {
             </div>
 
             {/* Results sheet */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
               <div className="p-4 border-b border-gray-150 bg-gray-50/50">
-                <h3 className="text-sm font-bold text-gray-900">Term Academic Transcript</h3>
+                <h3 className="text-sm font-bold text-gray-900 font-sans">Term Academic Transcript</h3>
               </div>
-              <div className="overflow-x-auto text-xs">
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-100/75 border-b border-gray-200 font-bold text-gray-700">
@@ -216,10 +218,10 @@ export default function StudentGradesPage() {
                       const sub = subjects.find(s => s.id === cs?.subject_id);
 
                       const getGradeColor = (g: string) => {
-                        if (g === 'A') return 'text-emerald-700 bg-emerald-50';
-                        if (['B', 'C'].includes(g)) return 'text-blue-700 bg-blue-50';
-                        if (['D', 'E'].includes(g)) return 'text-amber-700 bg-amber-50';
-                        return 'text-red-700 bg-red-50';
+                        if (g === 'A') return 'text-emerald-700 bg-emerald-50 border border-emerald-100';
+                        if (['B', 'C'].includes(g)) return 'text-blue-700 bg-blue-50 border border-blue-100';
+                        if (['D', 'E'].includes(g)) return 'text-amber-700 bg-amber-50 border border-amber-100';
+                        return 'text-red-700 bg-red-50 border border-red-100';
                       };
 
                       return (
@@ -230,7 +232,7 @@ export default function StudentGradesPage() {
                           <td className="p-4 font-bold">{grade.exam_score}</td>
                           <td className="p-4 font-extrabold text-sm text-gray-900">{grade.total_score}</td>
                           <td className="p-4">
-                            <span className={`px-2.5 py-1 text-[11px] font-extrabold rounded-full ${getGradeColor(grade.grade)}`}>
+                            <span className={`px-2.5 py-1 text-[11px] font-extrabold border rounded-full ${getGradeColor(grade.grade)}`}>
                               {grade.grade}
                             </span>
                           </td>
@@ -239,6 +241,51 @@ export default function StudentGradesPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden block space-y-4 p-4">
+                {grades.map(grade => {
+                  const cs = classSubjects.find(x => x.id === grade.class_subject_id);
+                  const sub = subjects.find(s => s.id === cs?.subject_id);
+
+                  const getGradeColor = (g: string) => {
+                    if (g === 'A') return 'text-emerald-700 bg-emerald-50 border border-emerald-100';
+                    if (['B', 'C'].includes(g)) return 'text-blue-700 bg-blue-50 border border-blue-100';
+                    if (['D', 'E'].includes(g)) return 'text-amber-700 bg-amber-50 border border-amber-100';
+                    return 'text-red-700 bg-red-50 border border-red-100';
+                  };
+
+                  return (
+                    <div key={grade.id} className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3.5 shadow-xs premium-card-hover">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-extrabold text-gray-900 text-xs leading-tight font-sans">{sub ? sub.name : 'Unknown Subject'}</h4>
+                          <p className="text-[9px] text-gray-400 font-mono mt-0.5">Code: {sub ? sub.code : 'N/A'}</p>
+                        </div>
+                        <span className={`px-2 py-0.5 text-[9px] font-extrabold border rounded-lg ${getGradeColor(grade.grade)}`}>
+                          Grade: {grade.grade}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 bg-gray-50/50 p-2.5 rounded-xl border border-gray-150 text-[10px] font-bold text-gray-500">
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-gray-450 uppercase tracking-wider block">Continuous Assessment</span>
+                          <span className="font-extrabold text-gray-800">{grade.ca_score} / 40</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          <span className="text-[8px] text-gray-450 uppercase tracking-wider block">Final Examination</span>
+                          <span className="font-extrabold text-gray-800">{grade.exam_score} / 60</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-1.5 border-t border-gray-100 text-[11px]">
+                        <span className="text-gray-450 font-bold">Total Term Score:</span>
+                        <span className="text-xs font-extrabold text-primary">{grade.total_score} / 100</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

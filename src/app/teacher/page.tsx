@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
 
         {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border rounded-xl p-5 shadow-xs flex items-center justify-between">
+          <div className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Assigned Classes</span>
               <h3 className="text-2xl font-extrabold text-gray-900">{myAllocations.length}</h3>
@@ -100,7 +100,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border rounded-xl p-5 shadow-xs flex items-center justify-between">
+          <div className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Weekly Periods</span>
               <h3 className="text-2xl font-extrabold text-gray-900">{timetableSlots.length}</h3>
@@ -111,7 +111,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border rounded-xl p-5 shadow-xs flex items-center justify-between">
+          <div className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Taught Pupils</span>
               <h3 className="text-2xl font-extrabold text-gray-900">
@@ -128,35 +128,35 @@ export default function TeacherDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Class List */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
               <div className="p-5 border-b border-gray-150 bg-gray-50/50">
-                <h2 className="text-sm font-bold text-gray-900">My Subjects & Assigned Classrooms</h2>
+                <h2 className="text-sm font-bold text-gray-900 font-sans">My Subjects & Assigned Classrooms</h2>
               </div>
               <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {myAllocations.length === 0 ? (
-                  <p className="text-xs text-gray-500 py-4 text-center sm:col-span-2">No subjects allocated to you yet.</p>
+                  <p className="text-xs text-gray-500 py-4 text-center sm:col-span-2 font-medium">No subjects allocated to you yet.</p>
                 ) : (
                   myAllocations.map(({ cs, cls, sub, studentCount }) => (
-                    <div key={cs.id} className="p-4 border rounded-xl bg-gray-50 border-gray-150 flex flex-col justify-between space-y-4 text-xs">
+                    <div key={cs.id} className="p-4 border rounded-2xl bg-gray-50 border-gray-150 flex flex-col justify-between space-y-4 text-xs premium-card-hover">
                       <div>
                         <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-150 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/40 rounded-md font-extrabold uppercase text-[9px]">
                           {cls.name}
                         </span>
-                        <h3 className="text-sm font-extrabold text-gray-900 mt-2 leading-tight">{sub.name}</h3>
+                        <h3 className="text-sm font-extrabold text-gray-900 mt-2 leading-tight font-sans">{sub.name}</h3>
                         <p className="text-[10px] text-gray-400 font-semibold uppercase mt-0.5">Code: {sub.code} | {studentCount} Students</p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 border-t border-gray-200/60 pt-3">
+                      <div className="grid grid-cols-2 gap-2 border-t border-gray-200/65 pt-3">
                         <Link 
                           href="/teacher/attendance"
-                          className="flex items-center justify-center gap-1.5 py-1.5 bg-white border hover:bg-emerald-50/50 hover:border-emerald-200 dark:hover:bg-emerald-950/20 dark:hover:border-emerald-900/50 rounded-lg font-bold text-gray-700 text-[11px] transition-colors"
+                          className="flex items-center justify-center gap-1.5 py-1.5 bg-white border border-gray-200 hover:bg-emerald-50/55 hover:border-emerald-250 dark:hover:bg-emerald-955/20 dark:hover:border-emerald-900/50 rounded-lg font-bold text-gray-700 text-[11px] transition-colors"
                         >
                           <UserCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                           <span>Attendance</span>
                         </Link>
                         <Link 
                           href="/teacher/grades"
-                          className="flex items-center justify-center gap-1.5 py-1.5 bg-white border hover:bg-emerald-50/50 hover:border-emerald-200 dark:hover:bg-emerald-950/20 dark:hover:border-emerald-900/50 rounded-lg font-bold text-gray-700 text-[11px] transition-colors"
+                          className="flex items-center justify-center gap-1.5 py-1.5 bg-white border border-gray-200 hover:bg-emerald-50/55 hover:border-emerald-250 dark:hover:bg-emerald-955/20 dark:hover:border-emerald-900/50 rounded-lg font-bold text-gray-700 text-[11px] transition-colors"
                         >
                           <FileText className="h-3.5 w-3.5 text-primary" />
                           <span>Grades CA</span>

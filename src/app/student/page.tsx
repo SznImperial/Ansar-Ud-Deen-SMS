@@ -200,33 +200,33 @@ export default function StudentDashboard() {
         {/* Quick summaries widgets */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Attendance Widget */}
-          <Link href="/student/attendance" className="bg-white border rounded-xl p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer">
+          <Link href="/student/attendance" className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Attendance Rate</span>
               <h3 className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">{attRate.toFixed(0)}%</h3>
               <p className="text-[10px] text-gray-500 font-semibold">{presentAttDays} present of {totalAttDays} classes</p>
             </div>
-            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-700 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/50 rounded-xl">
+            <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-700 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/50 rounded-xl transition-transform duration-300 group-hover:scale-110">
               <Calendar className="h-5 w-5" />
             </div>
           </Link>
 
           {/* Fees Widget */}
-          <Link href="/student/fees" className="bg-white border rounded-xl p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer">
+          <Link href="/student/fees" className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tuition Balance</span>
-              <h3 className={`text-2xl font-extrabold ${feeBalance > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+              <h3 className={`text-2xl font-extrabold ${feeBalance > 0 ? 'text-red-650 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                 ₦{feeBalance.toLocaleString()}
               </h3>
               <p className="text-[10px] text-gray-500 font-semibold">Total Owed: ₦{totalOwed.toLocaleString()}</p>
             </div>
-            <div className={`p-3 rounded-xl border ${feeBalance > 0 ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50' : 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/50'}`}>
+            <div className={`p-3 rounded-xl border transition-transform duration-300 ${feeBalance > 0 ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50' : 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/50'}`}>
               <CreditCard className="h-5 w-5" />
             </div>
           </Link>
 
           {/* Grades Widget */}
-          <Link href="/student/grades" className="bg-white border rounded-xl p-5 shadow-xs flex items-center justify-between hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer">
+          <Link href="/student/grades" className="bg-white border border-gray-205 rounded-2xl p-5 shadow-xs flex items-center justify-between premium-card-hover cursor-pointer">
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Report Cards</span>
               <h3 className="text-2xl font-extrabold text-blue-700 dark:text-blue-400">
@@ -234,7 +234,7 @@ export default function StudentDashboard() {
               </h3>
               <p className="text-[10px] text-gray-500 font-semibold">Grades recorded for current term</p>
             </div>
-            <div className="p-3 bg-blue-50 border border-blue-100 text-blue-700 dark:bg-blue-950/25 dark:text-blue-400 dark:border-blue-900/50 rounded-xl">
+            <div className="p-3 bg-blue-50 border border-blue-100 text-blue-700 dark:bg-blue-950/25 dark:text-blue-400 dark:border-blue-900/50 rounded-xl transition-transform duration-300">
               <CheckCircle className="h-5 w-5" />
             </div>
           </Link>

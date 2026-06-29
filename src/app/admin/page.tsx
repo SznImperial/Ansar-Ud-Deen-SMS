@@ -130,7 +130,7 @@ export default function AdminDashboard() {
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
-              <div key={idx} className={`bg-white border rounded-xl p-6 shadow-xs flex items-center justify-between`}>
+              <div key={idx} className={`bg-white border border-gray-205 rounded-2xl p-6 shadow-xs flex items-center justify-between premium-card-hover`}>
                 <div className="space-y-2">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{stat.title}</span>
                   <h3 className="text-3xl font-extrabold text-gray-900 leading-none">{stat.value}</h3>
@@ -146,12 +146,12 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Notices */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-xs lg:col-span-2 flex flex-col justify-between">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-xs lg:col-span-2 flex flex-col justify-between overflow-hidden">
             <div>
               <div className="p-6 border-b border-gray-150 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Volume2 className="h-5 w-5 text-primary" />
-                  <h2 className="text-base font-bold text-gray-900">Recent Notifications</h2>
+                  <h2 className="text-base font-bold text-gray-900 font-sans">Recent Notifications</h2>
                 </div>
                 <Link href="/admin/notifications" className="text-xs font-bold text-primary hover:underline">
                   Manage Notices
@@ -163,12 +163,12 @@ export default function AdminDashboard() {
                 ) : (
                   notifs.slice(0, 4).map((notif) => (
                     <div key={notif.id} className="py-4 first:pt-0 last:pb-0">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start justify-between gap-4 text-xs font-semibold">
                         <div>
-                          <h4 className="text-sm font-bold text-gray-900">{notif.title}</h4>
-                          <p className="text-xs text-gray-600 mt-1 leading-relaxed">{notif.content}</p>
+                          <h4 className="text-sm font-bold text-gray-900 font-sans">{notif.title}</h4>
+                          <p className="text-xs text-gray-650 mt-1 leading-relaxed">{notif.content}</p>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-400 shrink-0 whitespace-nowrap bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+                        <span className="text-[10px] font-bold text-gray-400 shrink-0 whitespace-nowrap bg-gray-50 px-2 py-0.5 rounded-md border border-gray-150">
                           Target: {notif.audience_type.toUpperCase()}
                         </span>
                       </div>
@@ -182,30 +182,30 @@ export default function AdminDashboard() {
             </div>
             
             {/* Quick Actions Panel */}
-            <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
+            <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-3">Quick Navigation</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Link 
                   href="/admin/curriculum" 
-                  className="bg-white border border-gray-200 p-3 rounded-lg text-center hover:border-primary hover:bg-emerald-50/20 transition-all text-xs font-bold text-gray-700"
+                  className="bg-white border border-gray-200 p-3 rounded-xl text-center hover:border-primary hover:bg-emerald-50/20 hover:text-primary transition-all text-xs font-bold text-gray-700 premium-card-hover"
                 >
                   Configure Classes
                 </Link>
                 <Link 
                   href="/admin/timetable" 
-                  className="bg-white border border-gray-200 p-3 rounded-lg text-center hover:border-primary hover:bg-emerald-50/20 transition-all text-xs font-bold text-gray-700"
+                  className="bg-white border border-gray-200 p-3 rounded-xl text-center hover:border-primary hover:bg-emerald-50/20 hover:text-primary transition-all text-xs font-bold text-gray-700 premium-card-hover"
                 >
                   Timetable Builder
                 </Link>
                 <Link 
                   href="/admin/fees" 
-                  className="bg-white border border-gray-200 p-3 rounded-lg text-center hover:border-primary hover:bg-emerald-50/20 transition-all text-xs font-bold text-gray-700"
+                  className="bg-white border border-gray-200 p-3 rounded-xl text-center hover:border-primary hover:bg-emerald-50/20 hover:text-primary transition-all text-xs font-bold text-gray-700 premium-card-hover"
                 >
                   Update Fees
                 </Link>
                 <Link 
                   href="/admin/notifications" 
-                  className="bg-white border border-gray-200 p-3 rounded-lg text-center hover:border-primary hover:bg-emerald-50/20 transition-all text-xs font-bold text-gray-700"
+                  className="bg-white border border-gray-200 p-3 rounded-xl text-center hover:border-primary hover:bg-emerald-50/20 hover:text-primary transition-all text-xs font-bold text-gray-700 premium-card-hover"
                 >
                   Send Broadcast
                 </Link>

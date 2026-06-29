@@ -209,11 +209,10 @@ export default function MarkAttendancePage() {
                 <CheckCircle className="h-5 w-5 shrink-0" />
                 <span>Attendance saved successfully. Records updated.</span>
               </div>
-            )}
-
-            {/* Attendance List Table */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-xs overflow-hidden">
-              <div className="overflow-x-auto text-xs">
+            )}            {/* Attendance List Table */}
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto text-xs">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-100/75 border-b border-gray-200 font-bold text-gray-700">
@@ -239,7 +238,7 @@ export default function MarkAttendancePage() {
                             <td className="p-4 font-bold text-gray-900">{student.admission_no}</td>
                             <td className="p-4 font-bold text-gray-900">{student.full_name}</td>
                             <td className="p-4">
-                              <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-4 text-xs font-semibold">
                                 <label className="flex items-center gap-1.5 cursor-pointer font-bold">
                                   <input
                                     type="radio"
@@ -259,7 +258,7 @@ export default function MarkAttendancePage() {
                                     checked={status === 'absent'}
                                     onChange={() => handleStatusChange(student.id, 'absent')}
                                   />
-                                  <span className="text-red-600">Absent</span>
+                                  <span className="text-red-650">Absent</span>
                                 </label>
 
                                 <label className="flex items-center gap-1.5 cursor-pointer font-bold">
@@ -277,7 +276,7 @@ export default function MarkAttendancePage() {
                             <td className="p-4">
                               <input
                                 type="text"
-                                className="w-full px-2.5 py-1 border border-gray-300 rounded-md text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                                className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-medium"
                                 placeholder="Add optional remarks..."
                                 value={remarks}
                                 onChange={e => handleRemarksChange(student.id, e.target.value)}
@@ -289,6 +288,84 @@ export default function MarkAttendancePage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card List View */}
+              <div className="md:hidden block space-y-4 p-4 bg-gray-50/50">
+                {students.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500 bg-white border rounded-2xl">No students found registered in this class.</div>
+                ) : (
+                  students.map(student => {
+                    const row = attendanceRows.find(r => r.studentId === student.id);
+                    const status = row ? row.status : 'present';
+                    const remarks = row ? row.remarks : '';
+
+                    return (
+                      <div key={student.id} className="bg-white border border-gray-200 rounded-2xl p-4 space-y-3.5 shadow-xs premium-card-hover">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-extrabold text-gray-955 text-xs leading-tight font-sans">{student.full_name}</h4>
+                            <p className="text-[9px] text-gray-400 font-mono mt-0.5">Admission: {student.admission_no}</p>
+                          </div>
+                        </div>
+
+                        {/* Segmented Roll Buttons */}
+                        <div className="grid grid-cols-3 gap-2 text-[10px] font-extrabold">
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(student.id, 'present')}
+                            className={`py-2.5 rounded-xl border flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              status === 'present'
+                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs scale-102'
+                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                            }`}
+                          >
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            <span>Present</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(student.id, 'absent')}
+                            className={`py-2.5 rounded-xl border flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              status === 'absent'
+                                ? 'bg-red-500 text-white border-red-500 shadow-xs scale-102'
+                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                            }`}
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                            <span>Absent</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(student.id, 'late')}
+                            className={`py-2.5 rounded-xl border flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              status === 'late'
+                                ? 'bg-amber-500 text-white border-amber-500 shadow-xs scale-102'
+                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                            }`}
+                          >
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            <span>Late</span>
+                          </button>
+                        </div>
+
+                        {/* Remarks input */}
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-gray-400 font-bold block">Remarks / Notes</label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-1.8 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-medium"
+                            placeholder="Add student remarks..."
+                            value={remarks}
+                            onChange={e => handleRemarksChange(student.id, e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               {/* Action bar */}

@@ -119,3 +119,49 @@ option {
   color: var(--foreground) !important;
 }
 
+/* Premium UI Utility Classes */
+.premium-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(26, 92, 42, 0.08);
+}
+
+.dark .premium-card-hover:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  border-color: var(--color-primary) !important;
+}
+
+/* Custom modern scrollbar styling */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300-bg);
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--gray-150-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400-bg);
+}
+

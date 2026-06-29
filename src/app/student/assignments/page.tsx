@@ -245,7 +245,7 @@ export default function StudentAssignmentsPage() {
               <h2 className="text-sm font-bold text-gray-900">Pending Assignments ({pendingTasks.length})</h2>
             </div>
             
-            <div className="p-5 divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[500px]">
+            <div className="p-4 lg:p-5 flex-1 overflow-y-auto max-h-[550px] space-y-3">
               {pendingTasks.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <CheckCircle className="h-10 w-10 text-emerald-500 mx-auto mb-2" />
@@ -255,35 +255,36 @@ export default function StudentAssignmentsPage() {
                 pendingTasks.map(({ assignment, subjectName, subjectCode, submission }) => {
                   const isOverdue = new Date(assignment.due_date) < new Date();
                   return (
-                    <div key={assignment.id} className="py-4 first:pt-0 last:pb-0 space-y-2.5 text-xs">
-                      <div>
+                    <div key={assignment.id} className="p-4 bg-gray-50/40 border border-gray-150 rounded-xl space-y-3 text-xs premium-card-hover">
+                      <div className="space-y-2">
                         <div className="flex justify-between items-start gap-4">
                           <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md font-extrabold text-[9px] uppercase">
                             {subjectName} ({subjectCode})
                           </span>
                           {submission ? (
-                            <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900 rounded-md font-extrabold text-[9px] uppercase">
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-150 rounded-md font-extrabold text-[9px] uppercase">
                               Submitted
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900 rounded-md font-extrabold text-[9px] uppercase">
+                            <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-150 rounded-md font-extrabold text-[9px] uppercase">
                               To Do
                             </span>
                           )}
                         </div>
-                        <h3 className="text-xs font-extrabold text-gray-900 mt-2 leading-tight">{assignment.title}</h3>
-                        <p className="text-gray-600 mt-1 font-medium whitespace-pre-line leading-relaxed">{assignment.description}</p>
+                        <h3 className="text-xs font-extrabold text-gray-900 mt-2 leading-tight font-sans">{assignment.title}</h3>
+                        <p className="text-gray-650 mt-1 font-medium whitespace-pre-line leading-relaxed">{assignment.description}</p>
                       </div>
 
-                      <div className="flex justify-between items-center pt-1.5 border-t border-gray-100/50">
-                        <span className={`text-[10px] font-bold ${isOverdue && !submission ? 'text-red-500' : 'text-gray-405'}`}>
+                      <div className="flex justify-between items-center pt-2.5 border-t border-gray-200/60">
+                        <span className={`text-[10px] font-bold flex items-center gap-1 ${isOverdue && !submission ? 'text-red-500' : 'text-gray-400'}`}>
+                          <Clock className="h-3.5 w-3.5" />
                           Due: {new Date(assignment.due_date).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                         </span>
                         
                         {user?.role === 'student' && !submission && (
                           <button
                             onClick={() => handleOpenSubmit(assignment)}
-                            className="px-3 py-1.5 bg-primary text-white hover:bg-primary/95 rounded-lg text-[10px] font-bold shadow-sm transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-[10px] font-bold shadow-xs transition-colors cursor-pointer"
                           >
                             Submit Answer
                           </button>
@@ -297,13 +298,13 @@ export default function StudentAssignmentsPage() {
           </div>
 
           {/* Graded & Completed Tasks */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xs flex flex-col">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs flex flex-col">
             <div className="p-5 border-b border-gray-150 bg-gray-50/50 flex items-center gap-2">
               <Award className="h-4.5 w-4.5 text-emerald-500" />
-              <h2 className="text-sm font-bold text-gray-900">Graded Course Works ({gradedTasks.length})</h2>
+              <h2 className="text-sm font-bold text-gray-900 font-sans">Graded Course Works ({gradedTasks.length})</h2>
             </div>
             
-            <div className="p-5 divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[500px]">
+            <div className="p-4 lg:p-5 flex-1 overflow-y-auto max-h-[550px] space-y-3">
               {gradedTasks.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
                   <AlertCircle className="h-10 w-10 text-gray-300 mx-auto mb-2" />
@@ -311,21 +312,21 @@ export default function StudentAssignmentsPage() {
                 </div>
               ) : (
                 gradedTasks.map(({ assignment, subjectName, subjectCode, submission }) => (
-                  <div key={assignment.id} className="py-4 first:pt-0 last:pb-0 space-y-2.5 text-xs">
+                  <div key={assignment.id} className="p-4 bg-gray-50/40 border border-gray-150 rounded-xl space-y-3 text-xs premium-card-hover">
                     <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900 rounded-md font-extrabold text-[9px] uppercase">
+                      <div className="space-y-1">
+                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 dark:bg-emerald-950/25 dark:text-emerald-400 dark:border-emerald-900/40 rounded-md font-extrabold text-[9px] uppercase">
                           {subjectName}
                         </span>
-                        <h3 className="text-xs font-extrabold text-gray-950 mt-2 leading-tight">{assignment.title}</h3>
+                        <h3 className="text-xs font-extrabold text-gray-955 mt-2 leading-tight font-sans">{assignment.title}</h3>
                       </div>
                       
                       {submission && (
                         <button
                           onClick={() => handleOpenGrade(assignment.title, submission)}
-                          className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900 hover:bg-emerald-100 hover:scale-[1.02] rounded-md font-extrabold text-[10px] transition-all cursor-pointer"
+                          className="px-2.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-150 dark:bg-emerald-950/20 dark:text-emerald-450 hover:bg-emerald-100 hover:scale-[1.02] rounded-lg font-extrabold text-[10px] transition-all cursor-pointer whitespace-nowrap shrink-0"
                         >
-                          Grade: {submission.grade} (View Feedback)
+                          Grade: {submission.grade}
                         </button>
                       )}
                     </div>
