@@ -81,6 +81,13 @@ function CBTTerminalContent() {
     loadExam();
   }, [examId, user]);
 
+  // Bind video stream to video tag once elements are mounted
+  useEffect(() => {
+    if (examStarted && mediaStreamRef.current && videoRef.current) {
+      videoRef.current.srcObject = mediaStreamRef.current;
+    }
+  }, [examStarted]);
+
   // Window unload listener (Unload Prevention)
   useEffect(() => {
     if (!examStarted || isViolated || submitting) return;
