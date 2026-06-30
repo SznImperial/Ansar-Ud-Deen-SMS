@@ -164,6 +164,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           const profile = await dbService.login(session.user.email || '');
           setUser(profile);
+        } else if (user) {
+          const profile = await dbService.login(user.email);
+          if (profile) {
+            setUser(profile);
+          }
         }
       } else {
         if (user) {
