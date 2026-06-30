@@ -1312,17 +1312,21 @@ export const dbService = {
 
   async submitPasswordResetRequest(email: string, fullName: string): Promise<T.PasswordResetRequest> {
     if (isSupabaseConfigured) {
-      const { data, error } = await supabase!
+      const { error } = await supabase!
         .from('password_reset_requests')
         .insert({
           email: email.trim().toLowerCase(),
           full_name: fullName,
           status: 'pending'
-        })
-        .select()
-        .single();
+        });
       if (error) throw error;
-      return data;
+      return {
+        id: '',
+        email: email.trim().toLowerCase(),
+        full_name: fullName,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      };
     } else {
       const newRequest: T.PasswordResetRequest = {
         id: `req-${Date.now()}`,
