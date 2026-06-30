@@ -9,6 +9,7 @@ export interface Profile {
   role: UserRole;
   password_changed: boolean;
   temp_password?: string;
+  custom_password?: string;
   created_at: string;
 }
 

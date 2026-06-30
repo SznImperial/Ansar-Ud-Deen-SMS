@@ -81,40 +81,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password = 'password123'): Promise<boolean> => {
     setLoading(true);
     try {
+      const profile = await dbService.login(email);
+      if (!profile) return false;
+
+      // 1. If user has a custom password override, validate and enforce it
+      if (profile.custom_password) {
+        if (password !== profile.custom_password) {
+          console.log('Custom password mismatch');
+          return false;
+        }
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('aud_session_user', JSON.stringify(profile));
+        }
+        setUser(profile);
+        return true;
+      }
+
+      // 2. If user has a temporary password reissued by Admin, validate and enforce it
+      if (profile.temp_password) {
+        if (password !== profile.temp_password) {
+          console.log('Temporary password mismatch');
+          return false;
+        }
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('aud_session_user', JSON.stringify(profile));
+        }
+        setUser(profile);
+        return true;
+      }
+
       if (isSupabaseConfigured && supabase) {
-        // 1. Try standard Supabase Auth first
+        // Try standard Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
           password: password
         });
 
         if (!error && data.user) {
-          const profile = await dbService.login(email.trim());
-          if (profile) {
-            setUser(profile);
+          const profileData = await dbService.login(email.trim());
+          if (profileData) {
+            setUser(profileData);
             return true;
           }
         }
-
-        // 2. If standard auth fails, check if a temporary password is active
-        // This select will only return data if RLS allows public select (e.g. temp_password is not null)
-        const tempProfile = await dbService.login(email.trim());
-        if (tempProfile && tempProfile.temp_password && password === tempProfile.temp_password) {
-          setUser(tempProfile);
-          return true;
-        }
         return false;
       } else {
-        // Mock storage flow
-        const profile = await dbService.login(email);
-        if (!profile) return false;
-
-        if (profile.temp_password) {
-          if (password !== profile.temp_password) {
-            console.log('Temporary password mismatch');
-            return false;
-          }
-        }
         localStorage.setItem('aud_session_user', JSON.stringify(profile));
         setUser(profile);
         return true;
@@ -197,7 +208,8 @@ function FirstTimePasswordChange() {
 
     setLoading(true);
     try {
-      if (isSupabaseConfigured && supabase) {
+      // Only update standard auth if they are NOT logging in via temporary bypass
+      if (isSupabaseConfigured && supabase && !user.temp_password) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           const { error } = await supabase.auth.updateUser({
@@ -211,8 +223,7 @@ function FirstTimePasswordChange() {
         }
       }
 
-      await dbService.markPasswordChanged(user.id);
-      await dbService.clearTempPassword(user.id);
+      await dbService.updateCustomPassword(user.id, newPassword);
       await refreshUserSession();
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');

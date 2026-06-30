@@ -11,6 +11,7 @@ create table public.profiles (
     role text not null check (role in ('admin', 'teacher', 'student', 'parent')),
     password_changed boolean not null default false,
     temp_password text,
+    custom_password text,
     created_at timestamptz default timezone('utc'::text, now()) not null
 );
 

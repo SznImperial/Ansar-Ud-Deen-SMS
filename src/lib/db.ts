@@ -1417,6 +1417,33 @@ export const dbService = {
         mockDB.saveProfiles(updatedProfiles);
       }
     }
+  },
+
+  async updateCustomPassword(profileId: string, newPassword: string): Promise<void> {
+    if (isSupabaseConfigured) {
+      const { error } = await supabase!
+        .from('profiles')
+        .update({ 
+          custom_password: newPassword, 
+          password_changed: true, 
+          temp_password: null 
+        })
+        .eq('id', profileId);
+      if (error) throw error;
+    } else {
+      const profiles = mockDB.getProfiles();
+      const idx = profiles.findIndex(p => p.id === profileId);
+      if (idx !== -1) {
+        const updatedProfiles = [...profiles];
+        updatedProfiles[idx] = {
+          ...updatedProfiles[idx],
+          custom_password: newPassword,
+          password_changed: true,
+          temp_password: undefined
+        };
+        mockDB.saveProfiles(updatedProfiles);
+      }
+    }
   }
 };
 
