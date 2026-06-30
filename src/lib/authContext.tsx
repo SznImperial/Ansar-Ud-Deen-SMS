@@ -81,37 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password = 'password123'): Promise<boolean> => {
     setLoading(true);
     try {
-      const profile = await dbService.login(email);
-      if (!profile) return false;
-
-      // 1. If user has a custom password override, validate and enforce it
-      if (profile.custom_password) {
-        if (password !== profile.custom_password) {
-          console.log('Custom password mismatch');
-          return false;
-        }
-        if (!isSupabaseConfigured) {
-          localStorage.setItem('aud_session_user', JSON.stringify(profile));
-        }
-        setUser(profile);
-        return true;
-      }
-
-      // 2. If user has a temporary password reissued by Admin, validate and enforce it
-      if (profile.temp_password) {
-        if (password !== profile.temp_password) {
-          console.log('Temporary password mismatch');
-          return false;
-        }
-        if (!isSupabaseConfigured) {
-          localStorage.setItem('aud_session_user', JSON.stringify(profile));
-        }
-        setUser(profile);
-        return true;
-      }
-
+      // 1. Try standard Supabase Auth first
       if (isSupabaseConfigured && supabase) {
-        // Try standard Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
           password: password
@@ -124,12 +95,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return true;
           }
         }
-        return false;
-      } else {
+      }
+
+      // 2. If standard login fails or if Supabase is not configured, load profile
+      let profile = null;
+      try {
+        profile = await dbService.login(email);
+      } catch (err) {
+        console.warn("Bypassing profile query check:", err);
+      }
+
+      if (profile) {
+        // Check for custom password override (if active)
+        if (profile.custom_password) {
+          if (password === profile.custom_password) {
+            if (!isSupabaseConfigured) {
+              localStorage.setItem('aud_session_user', JSON.stringify(profile));
+            }
+            setUser(profile);
+            return true;
+          }
+          return false;
+        }
+
+        // Check for temporary password (if active)
+        if (profile.temp_password) {
+          if (password === profile.temp_password) {
+            if (!isSupabaseConfigured) {
+              localStorage.setItem('aud_session_user', JSON.stringify(profile));
+            }
+            setUser(profile);
+            return true;
+          }
+          return false;
+        }
+      }
+
+      // 3. For Mock storage flow, if no temp/custom password is set, log them in
+      if (!isSupabaseConfigured && profile) {
         localStorage.setItem('aud_session_user', JSON.stringify(profile));
         setUser(profile);
         return true;
       }
+
+      return false;
     } catch (e) {
       console.error(e);
       return false;
